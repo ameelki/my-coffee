@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coffee Events Premium</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+scroll-behavior:smooth;
+}
+
+body{
+background:#0f1115;
+color:white;
+}
+
+nav{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+background:rgba(0,0,0,0.95);
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:15px 50px;
+z-index:999;
+}
+
+.logo{
+font-size:28px;
+font-weight:bold;
+color:#ff9800;
+}
+
+nav ul{
+display:flex;
+list-style:none;
+gap:25px;
+}
+
+nav a{
+text-decoration:none;
+color:white;
+font-weight:500;
+}
+
+nav a:hover{
+color:#ff9800;
+}
+
+.hero{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+text-align:center;
+padding:20px;
+background:
+linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.6)),
+url('https://images.unsplash.com/photo-1509042239860-f550ce710b93');
+background-size:cover;
+background-position:center;
+}
+
+.hero-content h1{
+font-size:70px;
+margin-bottom:20px;
+}
+
+.hero-content p{
+font-size:20px;
+max-width:900px;
+margin:auto;
+}
+
+.btn{
+display:inline-block;
+margin-top:25px;
+padding:15px 40px;
+background:#ff9800;
+color:white;
+text-decoration:none;
+border-radius:50px;
+font-weight:bold;
+}
+
+.btn:hover{
+background:#ffb300;
+}
+
+section{
+padding:100px 8%;
+}
+
+.section-title{
+font-size:42px;
+text-align:center;
+margin-bottom:50px;
+color:#ff9800;
+}
+
+.dashboard{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:20px;
+}
+
+.card-stat{
+background:#1a1c22;
+padding:35px;
+border-radius:20px;
+text-align:center;
+box-shadow:0 0 20px rgba(255,152,0,.2);
+}
+
+.card-stat h3{
+font-size:20px;
+margin-bottom:15px;
+}
+
+.number{
+font-size:42px;
+font-weight:bold;
+color:#ff9800;
+}
+
+.events{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+gap:25px;
+}
+
+.event{
+background:#1a1c22;
+border-radius:20px;
+overflow:hidden;
+transition:0.4s;
+}
+
+.event:hover{
+transform:translateY(-10px);
+}
+
+.event img{
+width:100%;
+height:220px;
+object-fit:cover;
+}
+
+.event-content{
+padding:20px;
+}
+
+.event-content h3{
+color:#ff9800;
+margin-bottom:10px;
+}
+
+.event-content p{
+color:#cfcfcf;
+}
+
+.event-date{
+margin-top:15px;
+font-weight:bold;
+}
+
+.form-container{
+max-width:800px;
+margin:auto;
+background:#1a1c22;
+padding:40px;
+border-radius:20px;
+}
+
+.form-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:15px;
+}
+
+input,
+select,
+textarea{
+width:100%;
+padding:15px;
+border:none;
+border-radius:10px;
+background:#2a2d35;
+color:white;
+}
+
+textarea{
+height:120px;
+resize:none;
+}
+
+button{
+padding:15px;
+background:#ff9800;
+border:none;
+border-radius:10px;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+button:hover{
+background:#ffb300;
+}
+
+.employees{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:20px;
+}
+
+.employee{
+background:#1a1c22;
+padding:25px;
+border-radius:15px;
+text-align:center;
+}
+
+.employee img{
+width:90px;
+height:90px;
+border-radius:50%;
+margin-bottom:15px;
+}
+
+.status{
+margin-top:10px;
+padding:8px;
+border-radius:20px;
+display:inline-block;
+background:#2e7d32;
+}
+
+.gallery{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:15px;
+}
+
+.gallery img{
+width:100%;
+height:250px;
+object-fit:cover;
+border-radius:15px;
+transition:0.3s;
+}
+
+.gallery img:hover{
+transform:scale(1.05);
+}
+
+.contact{
+background:#1a1c22;
+padding:40px;
+border-radius:20px;
+text-align:center;
+}
+
+footer{
+background:black;
+padding:30px;
+text-align:center;
+margin-top:50px;
+}
+
+@media(max-width:768px){
+
+nav{
+flex-direction:column;
+gap:15px;
+}
+
+.hero-content h1{
+font-size:40px;
+}
+
+.form-grid{
+grid-template-columns:1fr;
+}
+
+}
+
+</style>
+</head>
+<body>
+
+<nav>
+
+<div class="logo">
+☕ Coffee Events
+</div>
+
+<ul>
+<li><a href="#accueil">Accueil</a></li>
+<li><a href="#dashboard">Dashboard</a></li>
+<li><a href="#events">Événements</a></li>
+<li><a href="#reservation">Réservation</a></li>
+<li><a href="#employees">Employés</a></li>
+<li><a href="#gallery">Galerie</a></li>
+<li><a href="#contact">Contact</a></li>
+</ul>
+
+</nav>
+
+<section class="hero" id="accueil">
+
+<div class="hero-content">
+
+<h1>Coffee Events Premium</h1>
+
+<p>
+Concerts Live, Soirées Jazz, Networking,
+Stand-Up Comedy, Karaoké, Expositions Artistiques et bien plus.
+</p>
+
+<a href="#reservation" class="btn">
+Réserver maintenant
+</a>
+
+</div>
+
+</section>
+
+<section id="dashboard">
+
+<h2 class="section-title">
+Dashboard Administrateur
+</h2>
+
+<div class="dashboard">
+
+<div class="card-stat">
+<h3>Réservations</h3>
+<div class="number" id="rsv">0</div>
+</div>
+
+<div class="card-stat">
+<h3>Événements</h3>
+<div class="number">24</div>
+</div>
+
+<div class="card-stat">
+<h3>Employés</h3>
+<div class="number">15</div>
+</div>
+
+<div class="card-stat">
+<h3>Taux Occupation</h3>
+<div class="number">92%</div>
+</div>
+
+</div>
+
+</section>
+
+<section id="events">
+
+<h2 class="section-title">
+Événements à venir
+</h2>
+
+<div class="events">
+
+<div class="event">
+<img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f">
+<div class="event-content">
+<h3>Soirée Jazz</h3>
+<p>Ambiance lounge avec artistes internationaux.</p>
+<div class="event-date">15 Novembre - 20h00</div>
+</div>
+</div>
+
+<div class="event">
+<img src="https://images.unsplash.com/photo-1516280440614-37939bbacd81">
+<div class="event-content">
+<h3>Stand-Up Comedy</h3>
+<p>Les meilleurs humoristes de la région.</p>
+<div class="event-date">18 Novembre - 19h30</div>
+</div>
+</div>
+
+<div class="event">
+<img src="https://images.unsplash.com/photo-1511578314322-379afb476865">
+<div class="event-content">
+<h3>Business Networking</h3>
+<p>Rencontrez investisseurs et entrepreneurs.</p>
+<div class="event-date">22 Novembre - 18h00</div>
+</div>
+</div>
+
+</div>
+
+</section>
+
+<section id="reservation">
+
+<h2 class="section-title">
+Réservation
+</h2>
+
+<div class="form-container">
+
+<form onsubmit="reserve(event)">
+
+<div class="form-grid">
+
+<input type="text" placeholder="Nom" required>
+
+<input type="text" placeholder="Prénom" required>
+
+<input type="email" placeholder="Email" required>
+
+<input type="tel" placeholder="Téléphone" required>
+
+<select required>
+<option>Choisir un événement</option>
+<option>Soirée Jazz</option>
+<option>Stand-Up Comedy</option>
+<option>Business Networking</option>
+</select>
+
+<input type="date" required>
+
+<input type="time" required>
+
+<select>
+<option>Nombre de personnes</option>
+<option>1</option>
+<option>2</option>
+<option>3</option>
+<option>4</option>
+<option>5+</option>
+</select>
+
+<select>
+<option>Zone</option>
+<option>VIP</option>
+<option>Terrasse</option>
+<option>Salle principale</option>
+</select>
+
+<select>
+<option>Boisson offerte</option>
+<option>Expresso</option>
+<option>Cappuccino</option>
+<option>Latte</option>
+<option>Thé</option>
+</select>
+
+</div>
+
+<br>
+
+<textarea placeholder="Commentaires"></textarea>
+
+<br><br>
+
+<button type="submit">
+Confirmer la réservation
+</button>
+
+</form>
+
+</div>
+
+</section>
+
+<section id="employees">
+
+<h2 class="section-title">
+Gestion des Employés
+</h2>
+
+<div class="employees">
+
+<div class="employee">
+<img src="https://randomuser.me/api/portraits/women/44.jpg">
+<h3>Sarah Martin</h3>
+<p>Manager</p>
+<div class="status">Disponible</div>
+</div>
+
+<div class="employee">
+<img src="https://randomuser.me/api/portraits/men/32.jpg">
+<h3>Thomas Bernard</h3>
+<p>Barista Senior</p>
+<div class="status">Affecté Événement</div>
+</div>
+
+<div class="employee">
+<img src="https://randomuser.me/api/portraits/women/65.jpg">
+<h3>Julie Moreau</h3>
+<p>Serveuse VIP</p>
+<div class="status">Disponible</div>
+</div>
+
+<div class="employee">
+<img src="https://randomuser.me/api/portraits/men/45.jpg">
+<h3>David Leroy</h3>
+<p>Animateur</p>
+<div class="status">En service</div>
+</div>
+
+</div>
+
+</section>
+
+<section id="gallery">
+
+<h2 class="section-title">
+Galerie
+</h2>
+
+<div class="gallery">
+
+<img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30">
+
+<img src="https://images.unsplash.com/photo-1501386761578-eac5c94b800a">
+
+<img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7">
+
+<img src="https://images.unsplash.com/photo-1518972559570-7cc1309f3229">
+
+</div>
+
+</section>
+
+<section id="contact">
+
+<h2 class="section-title">
+Contact
+</h2>
+
+<div class="contact">
+
+<h3>Coffee Events Premium</h3>
+
+<br>
+
+<p>📍 Luxembourg</p>
+<p>📞 +352 000 000 000</p>
+<p>✉ contact@coffee-events.com</p>
+
+</div>
+
+</section>
+
+<footer>
+© 2026 Coffee Events Premium
+</footer>
+
+<script>
+
+let reservations = 230;
+
+function reserve(e){
+
+e.preventDefault();
+
+reservations++;
+
+document.getElementById("rsv").innerText = reservations;
+
+alert(
+"✅ Réservation enregistrée avec succès !"
+);
+
+}
+
+let counter = 0;
+let target = 230;
+
+let interval = setInterval(() => {
+
+counter++;
+
+document.getElementById("rsv").innerText = counter;
+
+if(counter >= target){
+clearInterval(interval);
+}
+
+},15);
+
+</script>
+
+</body>
+</html>
