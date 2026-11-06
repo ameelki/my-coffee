@@ -29,7 +29,7 @@ export class MenuAdminPage {
     { key: 'description', label: 'Description', type: 'textarea' },
     { key: 'price', label: 'Prix (€)', type: 'number' },
     { key: 'category', label: 'Catégorie', type: 'ref', refUrl: '/admin/categories' },
-    { key: 'imageUrl', label: 'Adresse d\'une photo (facultatif)', type: 'text', hint: 'Lien https vers une image. Sans photo, l\'icône de la catégorie s\'affiche.' },
+    { key: 'image', label: 'Photo', type: 'image', hint: 'JPG, PNG ou WebP, réduite automatiquement. Sans photo, une image par défaut s\'affiche.' },
     { key: 'tags', label: 'Étiquettes', type: 'text', hint: 'Séparées par des virgules : vegan, sans gluten…' },
     { key: 'prepMinutes', label: 'Temps de préparation (min)', type: 'number' },
     { key: 'position', label: 'Position', type: 'number' },
@@ -38,7 +38,7 @@ export class MenuAdminPage {
     { key: 'optionsJson', label: 'Options (taille, lait, cuisson…)', type: 'options', hint: 'Chaque groupe propose des choix, avec un supplément de prix éventuel.' },
   ];
   prodCols: Column[] = [
-    { key: 'name', label: 'Produit' }, { key: 'category.name', label: 'Catégorie' }, { key: 'price', label: 'Prix', type: 'money' },
+    { key: 'photo', label: 'Photo', type: 'image' }, { key: 'name', label: 'Produit' }, { key: 'category.name', label: 'Catégorie' }, { key: 'price', label: 'Prix', type: 'money' },
     { key: 'available', label: 'Disponible', type: 'bool' }, { key: 'active', label: 'Visible', type: 'bool' },
   ];
 }

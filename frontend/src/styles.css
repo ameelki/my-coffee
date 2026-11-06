@@ -272,3 +272,5 @@ input, select, textarea { border-radius: 12px; min-height: 46px; }
   .tbl-wrap { overflow: visible; }
   .form-grid { grid-template-columns: 1fr; }
 }
+.thumb { width: 96px; height: 96px; border-radius: 12px; object-fit: cover; background: var(--ink); flex-shrink: 0; }
+.thumb-sm { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; background: var(--ink); }

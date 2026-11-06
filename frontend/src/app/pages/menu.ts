@@ -6,7 +6,7 @@ import { CartService } from '../core/cart.service';
 import { SettingsService } from '../core/settings.service';
 import { ToastService } from '../core/toast.service';
 import { Category, Menu, OptionChoice, OptionGroup, Product } from '../core/models';
-import { errMsg, money, parseOptions } from '../core/util';
+import { errMsg, money, parseOptions, productImg } from '../core/util';
 
 @Component({
   selector: 'app-menu',
@@ -42,7 +42,7 @@ import { errMsg, money, parseOptions } from '../core/util';
               <div class="grid c2">
                 @for (p of itemsOf(m, c); track p.id) {
                   <div class="prod" [class.off]="!p.available" role="button" tabindex="0" (click)="open(p)" (keydown.enter)="open(p)">
-                    <div class="pic">@if (p.imageUrl) { <img [src]="p.imageUrl" [alt]="p.name" loading="lazy" /> } @else { {{ c.icon || '☕' }} }</div>
+                    <div class="pic"><img [src]="img(p)" [alt]="p.name" loading="lazy" /></div>
                     <div>
                       <h3>{{ p.name }}</h3>
                       @if (p.description) { <p class="desc">{{ p.description }}</p> }
@@ -98,6 +98,7 @@ export class MenuPage implements OnInit {
   cart = inject(CartService);
   settings = inject(SettingsService);
   money = money;
+  img = productImg;
 
   menu = signal<Menu | null>(null);
   active = signal<number | null>(null);

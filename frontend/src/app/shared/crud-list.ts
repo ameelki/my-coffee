@@ -2,18 +2,19 @@ import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular
 import { FormsModule } from '@angular/forms';
 import { Api } from '../core/api.service';
 import { OptionGroup } from '../core/models';
-import { errMsg, money, parseOptions } from '../core/util';
+import { compressImage } from '../core/image';
+import { errMsg, money, parseOptions, productImg } from '../core/util';
 
 export interface Field {
   key: string;
   label: string;
-  type: 'text' | 'textarea' | 'number' | 'bool' | 'date' | 'select' | 'password' | 'ref' | 'options';
+  type: 'text' | 'textarea' | 'number' | 'bool' | 'date' | 'select' | 'password' | 'ref' | 'options' | 'image';
   options?: { value: string; label: string }[];
   refUrl?: string;
   refLabel?: string;
   hint?: string;
 }
-export interface Column { key: string; label: string; type?: 'text' | 'money' | 'bool'; }
+export interface Column { key: string; label: string; type?: 'text' | 'money' | 'bool' | 'image'; }
 
 /** Liste + formulaire d'édition générique, utilisée par tous les écrans de configuration. */
 @Component({
@@ -31,7 +32,9 @@ export interface Column { key: string; label: string; type?: 'text' | 'money' | 
       <tbody>
         @for (it of items; track it.id) {
           <tr>
-            @for (c of columns; track c.key) { <td [attr.data-label]="c.label">{{ cell(it, c) }}</td> }
+            @for (c of columns; track c.key) {
+              <td [attr.data-label]="c.label">@if (c.type === 'image') { <img class="thumb-sm" [src]="img(it)" alt="" loading="lazy" /> } @else { {{ cell(it, c) }} }</td>
+            }
             <td style="white-space:nowrap">
               <button class="btn btn-ghost btn-sm" (click)="open(it)">Modifier</button>
               <button class="btn btn-ghost btn-sm" (click)="remove(it)">Supprimer</button>
@@ -74,6 +77,19 @@ export interface Column { key: string; label: string; type?: 'text' | 'money' | 
                     <option [ngValue]="null">Aucune</option>
                     @for (r of refs[f.key] || []; track r.id) { <option [ngValue]="r.id">{{ r[f.refLabel || 'name'] }}</option> }
                   </select></div>
+              }
+              @case ('image') {
+                <div class="field">
+                  <span class="lbl">{{ f.label }}</span>
+                  <div class="row" style="flex-wrap:nowrap; align-items:flex-start">
+                    <img class="thumb" [src]="preview || currentImg()" alt="Aperçu de la photo" />
+                    <div class="stack">
+                      <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" (change)="pick($event)" aria-label="Choisir une photo" />
+                      @if (hasPhoto()) { <button type="button" class="btn btn-ghost btn-sm" (click)="removePhoto()">Retirer la photo</button> }
+                      @if (f.hint) { <span class="muted small">{{ f.hint }}</span> }
+                    </div>
+                  </div>
+                </div>
               }
               @case ('options') {
                 <div class="field">
@@ -129,6 +145,10 @@ export class CrudList implements OnInit {
   refs: Record<string, any[]> = {};
   error = '';
   saving = false;
+  img = productImg;
+  pendingFile: Blob | null = null;
+  preview = '';
+  removeFlag = false;
 
   ngOnInit() { this.load(); }
 
@@ -153,7 +173,34 @@ export class CrudList implements OnInit {
     for (const f of this.fields) if (f.type === 'password') this.editing[f.key] = '';
     const ok = this.optionsKey();
     this.groups = ok ? parseOptions(this.editing[ok]) : [];
+    this.pendingFile = null;
+    this.preview = '';
+    this.removeFlag = false;
     this.loadRefs();
+  }
+
+  currentImg(): string { return this.removeFlag ? productImg({ id: 0 }) : productImg(this.editing); }
+  hasPhoto(): boolean { return !!this.preview || (!!this.editing?.hasImage && !this.removeFlag); }
+
+  async pick(ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files && input.files[0];
+    if (!file) return;
+    try {
+      const blob = await compressImage(file);
+      this.pendingFile = blob;
+      this.preview = URL.createObjectURL(blob);
+      this.removeFlag = false;
+      this.error = '';
+    } catch {
+      this.error = 'Image illisible. Essayez un autre fichier.';
+    }
+  }
+
+  removePhoto() {
+    this.pendingFile = null;
+    this.preview = '';
+    this.removeFlag = true;
   }
 
   setRef(f: Field, id: number | null) {
@@ -174,9 +221,21 @@ export class CrudList implements OnInit {
     this.saving = true;
     const call = body.id ? this.api.put<any>(this.endpoint + '/' + body.id, body) : this.api.post<any>(this.endpoint, body);
     call.subscribe({
-      next: () => { this.saving = false; this.editing = null; this.load(); this.changed.emit(); },
+      next: (saved) => this.afterSave(saved),
       error: (e) => { this.saving = false; this.error = errMsg(e); },
     });
+  }
+
+  private afterSave(saved: any) {
+    const done = () => { this.saving = false; this.editing = null; this.load(); this.changed.emit(); };
+    const fail = (e: any) => { this.saving = false; this.error = 'Élément enregistré, mais la photo a échoué : ' + errMsg(e); this.load(); };
+    if (this.pendingFile && saved?.id) {
+      this.api.upload<any>(this.endpoint + '/' + saved.id + '/image', this.pendingFile, 'photo.jpg').subscribe({ next: done, error: fail });
+    } else if (this.removeFlag && saved?.id) {
+      this.api.del<any>(this.endpoint + '/' + saved.id + '/image').subscribe({ next: done, error: fail });
+    } else {
+      done();
+    }
   }
 
   remove(it: any) {

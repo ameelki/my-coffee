@@ -9,7 +9,7 @@ export interface OptionChoice { name: string; price: number; }
 export interface OptionGroup { name: string; required: boolean; multi: boolean; choices: OptionChoice[]; }
 export interface Product {
   id: number; name: string; description?: string; price: number; imageUrl?: string; category?: Category;
-  available: boolean; active: boolean; position: number; prepMinutes?: number; tags?: string; optionsJson?: string;
+  available: boolean; active: boolean; position: number; prepMinutes?: number; hasImage?: boolean; imageVersion?: number; tags?: string; optionsJson?: string;
 }
 export interface Menu { categories: Category[]; products: Product[]; }
 export interface CartLine {

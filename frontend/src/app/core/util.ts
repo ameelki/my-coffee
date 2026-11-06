@@ -1,3 +1,4 @@
+import { environment } from '../../environments/environment';
 import { OptionGroup, OrderStatus, ReservationStatus } from './models';
 
 export function money(v: number | string | null | undefined): string {
@@ -45,3 +46,10 @@ export function timeHm(t: string | undefined): string {
 export function minutesAgo(iso: string): number {
   return Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
 }
+
+/** Photo d'un produit : photo envoyée > lien externe > image par défaut. */
+export function productImg(p: { id: number; hasImage?: boolean | null; imageVersion?: number | null; imageUrl?: string | null }): string {
+  if (p.hasImage) return environment.apiUrl + '/public/products/' + p.id + '/image?v=' + (p.imageVersion || 0);
+  return p.imageUrl || DEFAULT_PRODUCT_IMG;
+}
+export const DEFAULT_PRODUCT_IMG = 'assets/default-product.svg';

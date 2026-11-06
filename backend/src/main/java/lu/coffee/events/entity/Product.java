@@ -14,6 +14,9 @@ public class Product extends BaseEntity {
     public String imageUrl;
     @ManyToOne
     public Category category;
+    /** true si une photo est stockée en base (voir ProductImage). */
+    public Boolean hasImage = false;
+    public Long imageVersion = 0L;
     public boolean available = true;
     public boolean active = true;
     public int position;

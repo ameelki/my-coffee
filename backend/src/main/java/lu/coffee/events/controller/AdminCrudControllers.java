@@ -2,6 +2,9 @@ package lu.coffee.events.controller;
 
 import lu.coffee.events.entity.*;
 import lu.coffee.events.repository.*;
+import lu.coffee.events.service.Errors;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,8 +25,24 @@ public class AdminCrudControllers {
     @RequestMapping("/api/admin/products")
     public static class Products extends CrudController<Product> {
         private final ProductRepository r;
-        public Products(ProductRepository r) { super(r); this.r = r; }
+        private final ProductImageRepository images;
+        public Products(ProductRepository r, ProductImageRepository images) { super(r); this.r = r; this.images = images; }
         @Override protected List<Product> all() { return r.findAllByOrderByPositionAscIdAsc(); }
+
+        /** La photo ne se modifie que par l'envoi dédié : on garde l'état existant. */
+        @Override
+        public Product update(@PathVariable Long id, @RequestBody Product body) {
+            Product old = r.findById(id).orElseThrow(() -> Errors.notFound("Élément introuvable."));
+            body.hasImage = old.hasImage;
+            body.imageVersion = old.imageVersion;
+            return super.update(id, body);
+        }
+
+        @Override
+        public void delete(@PathVariable Long id) {
+            super.delete(id);
+            images.deleteById(id);
+        }
     }
 
     @RestController
