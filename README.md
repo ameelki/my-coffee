@@ -18,7 +18,7 @@ Tout ce qui est « règle » se modifie dans l'admin, sans toucher au code : tar
 
 ```bash
 docker compose up -d                 # PostgreSQL local
-cd backend && ./mvnw spring-boot:run # ou : mvn spring-boot:run    (http://localhost:8080)
+cd backend && mvn spring-boot:run          # http://localhost:8080
 cd frontend && npm install && npm start   # http://localhost:4200
 ```
 
