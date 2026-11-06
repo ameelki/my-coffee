@@ -18,6 +18,17 @@ export function startDomTranslation(i18n: I18n): void {
 
   const shownText = new WeakMap<Node, string>();
   const shownAttr = new WeakMap<Element, Record<string, string>>();
+  // Garde-fou : un même nœud n'est jamais retraduit plus de 6 fois (évite toute boucle avec Angular).
+  const touches = new WeakMap<object, number>();
+  const allowed = (o: object): boolean => {
+    const n = (touches.get(o) ?? 0) + 1;
+    touches.set(o, n);
+    return n <= 6;
+  };
+
+  let observer: MutationObserver;
+  const pending = new Set<Node>();
+  let scheduled = false;
 
   const translateText = (n: Node): void => {
     const parent = n.parentElement;
@@ -27,7 +38,7 @@ export function startDomTranslation(i18n: I18n): void {
     const trimmed = t.trim();
     if (!trimmed) return;
     const out = i18n.tr(trimmed);
-    if (out !== trimmed.replace(/\s+/g, ' ')) {
+    if (out !== trimmed.replace(/\s+/g, ' ') && allowed(n)) {
       const nv = t.replace(trimmed, () => out);
       shownText.set(n, nv);
       n.nodeValue = nv;
@@ -41,7 +52,7 @@ export function startDomTranslation(i18n: I18n): void {
       const seen = shownAttr.get(el) ?? {};
       if (seen[a] === v) continue;
       const out = i18n.tr(v);
-      if (out !== v) {
+      if (out !== v && allowed(el)) {
         seen[a] = out;
         shownAttr.set(el, seen);
         el.setAttribute(a, out);
@@ -58,13 +69,29 @@ export function startDomTranslation(i18n: I18n): void {
     el.childNodes.forEach(walk);
   };
 
-  new MutationObserver((mutations) => {
-    for (const m of mutations) {
-      if (m.type === 'childList') m.addedNodes.forEach(walk);
-      else if (m.type === 'characterData') translateText(m.target);
-      else if (m.type === 'attributes') translateAttrs(m.target as Element);
+  const opts: MutationObserverInit = { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTRS };
+
+  // Les modifications sont regroupées et traitées hors observation : nos propres écritures ne relancent rien.
+  const flush = (): void => {
+    scheduled = false;
+    const nodes = Array.from(pending);
+    pending.clear();
+    observer.disconnect();
+    try {
+      for (const n of nodes) if (n.isConnected) walk(n);
+    } finally {
+      observer.observe(document.body, opts);
     }
-  }).observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTRS });
+  };
+
+  observer = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      if (m.type === 'childList') m.addedNodes.forEach((n) => pending.add(n));
+      else pending.add(m.target);
+    }
+    if (!scheduled && pending.size) { scheduled = true; setTimeout(flush, 30); }
+  });
+  observer.observe(document.body, opts);
 
   walk(document.body);
 }

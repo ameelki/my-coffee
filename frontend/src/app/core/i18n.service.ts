@@ -13,6 +13,8 @@ const KEY = 'cafe_lang';
 
 export function currentLang(): Lang {
   try {
+    const q = new URLSearchParams(location.search).get('lang');
+    if (q === 'pt' || q === 'lb' || q === 'de' || q === 'fr') { localStorage.setItem(KEY, q); return q; }
     const v = localStorage.getItem(KEY);
     if (v === 'pt' || v === 'lb' || v === 'de' || v === 'fr') return v;
     const nav = (navigator.language || 'fr').toLowerCase();
