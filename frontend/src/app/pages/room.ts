@@ -18,7 +18,8 @@ import { dateFr, errMsg, isoDate, money } from '../core/util';
 
       @if (settings.loaded() && !settings.bool('room.enabled')) {
         <div class="err">Les réservations de la salle sont fermées pour le moment. Contactez-nous au {{ settings.str('cafe.phone') }}.</div>
-      } @else if (done; as r) {
+      } @else {
+      @if (done; as r) {
         <div class="card stack">
           <h2>Demande envoyée</h2>
           <p>Votre code de réservation :</p>
@@ -125,6 +126,7 @@ import { dateFr, errMsg, isoDate, money } from '../core/util';
             <p class="muted small" style="margin-top:10px">{{ settings.str('room.conditions') }}</p>
           </aside>
         </div>
+      }
       }
     </div>
   `,
