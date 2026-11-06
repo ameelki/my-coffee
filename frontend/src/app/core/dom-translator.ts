@@ -11,6 +11,8 @@ const SKIP = new Set(['SCRIPT', 'STYLE', 'TEXTAREA', 'CODE', 'TITLE']);
 export function startDomTranslation(i18n: I18n): void {
   document.documentElement.lang = ({ lb: 'lb', pt: 'pt-PT', de: 'de-LU', fr: 'fr' } as Record<string, string>)[i18n.lang];
   if (i18n.lang === 'fr') return;
+  // Diagnostic : ?notr=1 désactive la traduction automatique du texte (le reste de la langue reste actif).
+  if (new URLSearchParams(location.search).get('notr') === '1') return;
 
   // confirm() : messages traduits aussi
   const nativeConfirm = window.confirm.bind(window);
