@@ -23,6 +23,7 @@ import { RESERVATION_LABEL, dateFr, errMsg, money } from '../core/util';
           <p><b>{{ dateText(x.date) }}</b><br>de {{ x.startTime.substring(0, 5) }} à {{ x.endTime.substring(0, 5) }} · {{ x.guests }} personnes@if (x.eventType) { · {{ x.eventType }} }</p>
           @if (x.packageName) { <p>Formule : {{ x.packageName }}</p> }
           @if (x.extrasText) { <p>Options : {{ x.extrasText }}</p> }
+          @if (x.mealsText) { <p>Repas : {{ x.mealsText }}</p> }
           <p>Total {{ money(x.total) }} · acompte {{ money(x.deposit) }} à régler sur place</p>
           @if (x.adminNote) { <div class="table-banner">Message du café : {{ x.adminNote }}</div> }
           @if (x.status === 'PENDING' || x.status === 'CONFIRMED') {

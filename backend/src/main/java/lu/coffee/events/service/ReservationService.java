@@ -23,15 +23,17 @@ public class ReservationService {
     private final BlockedDateRepository blocked;
     private final RoomPackageRepository packages;
     private final RoomExtraRepository extras;
+    private final ProductRepository products;
     private final SettingsService settings;
     private final MailService mail;
 
     public ReservationService(ReservationRepository res, BlockedDateRepository blocked, RoomPackageRepository packages,
-                              RoomExtraRepository extras, SettingsService settings, MailService mail) {
+                              RoomExtraRepository extras, ProductRepository products, SettingsService settings, MailService mail) {
         this.res = res;
         this.blocked = blocked;
         this.packages = packages;
         this.extras = extras;
+        this.products = products;
         this.settings = settings;
         this.mail = mail;
     }
@@ -124,6 +126,19 @@ public class ReservationService {
                 extraNames.add(ex.name);
             }
         }
+        List<String> mealLines = new ArrayList<>();
+        if (r.meals() != null && !r.meals().isEmpty()) {
+            if (!admin && !settings.bool("room.meals.enabled")) throw Errors.bad("La commande de repas n'est pas proposée pour la salle.");
+            for (Dto.MealReq m : r.meals()) {
+                int qty = m.perGuest() ? r.guests() : m.quantity();
+                if (qty <= 0) continue;
+                Product p = products.findById(m.productId()).orElseThrow(() -> Errors.bad("Un produit choisi n'existe plus."));
+                if (!p.active || !p.available) throw Errors.bad(p.name + " n'est plus disponible.");
+                total = total.add(p.price.multiply(BigDecimal.valueOf(qty)));
+                mealLines.add(qty + " × " + p.name);
+            }
+        }
+        x.mealsText = mealLines.isEmpty() ? null : String.join(", ", mealLines);
         total = total.setScale(2, RoundingMode.HALF_UP);
         x.extrasText = extraNames.isEmpty() ? null : String.join(", ", extraNames);
         x.total = total;
@@ -160,6 +175,7 @@ public class ReservationService {
         return "Code : " + r.code + "\nDate : " + r.date + " de " + r.startTime + " à " + r.endTime
                 + "\nInvités : " + r.guests + (r.packageName != null ? "\nFormule : " + r.packageName : "")
                 + (r.extrasText != null ? "\nOptions : " + r.extrasText : "")
+                + (r.mealsText != null ? "\nRepas : " + r.mealsText : "")
                 + "\nTotal : " + r.total + " EUR (acompte " + r.deposit + " EUR)\n";
     }
 

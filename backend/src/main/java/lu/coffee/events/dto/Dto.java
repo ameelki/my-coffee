@@ -40,7 +40,11 @@ public final class Dto {
     public record ReservationRequest(@NotBlank String customerName, @NotBlank @Email String email,
                                      @NotBlank String phone, String eventType, @NotNull LocalDate date,
                                      @NotNull LocalTime startTime, @NotNull LocalTime endTime,
-                                     @Min(1) int guests, Long packageId, List<Long> extraIds, String note) {}
+                                     @Min(1) int guests, Long packageId, List<Long> extraIds, String note,
+                                     List<MealReq> meals) {}
+
+    /** Plat ou boisson réservé pour la salle : soit une quantité précise, soit un par invité. */
+    public record MealReq(@NotNull Long productId, boolean perGuest, @Min(0) @Max(500) int quantity) {}
 
     public record DayInfo(LocalDate date, boolean closed, String reason, List<String> booked) {}
 

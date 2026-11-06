@@ -45,6 +45,7 @@ public class SettingsService {
         DEFAULTS.put("room.minNoticeDays", "2");
         DEFAULTS.put("room.bufferMinutes", "60");
         DEFAULTS.put("room.autoConfirm", "false");
+        DEFAULTS.put("room.meals.enabled", "true");
         DEFAULTS.put("room.closedWeekdays", "");
         DEFAULTS.put("room.eventTypes", "Anniversaire,Baptême,Repas d'équipe,Mariage / fiançailles,Soirée privée,Autre");
         DEFAULTS.put("room.conditions", "Acompte réglé sur place à la confirmation. Annulation gratuite jusqu'à 7 jours avant l'événement.");

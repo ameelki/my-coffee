@@ -47,7 +47,7 @@ Sinon : back-end sur Render (`render.yaml`) avec une base Neon / Supabase, front
 
 - **QR code à table** : l'admin imprime un QR code par table (`/admin/tables`). Il ouvre `/carte?table=T4` ; la table est retenue pour la commande. Les images de QR codes sont générées par le service `api.qrserver.com`.
 - **Commande** : numéro de suivi `C-XXXXXX`. Statuts : reçue, en préparation, prête, servie, annulée. La page de suivi se met à jour toutes les 10 s, l'écran cuisine toutes les 8 s.
-- **Salle** : numéro `R-XXXXXX`. Les demandes sont « en attente » jusqu'à confirmation (ou confirmées d'office si l'option est activée). Le serveur vérifie les chevauchements (avec un temps de battement réglable), les fermetures, le délai minimum, la capacité et la durée, puis calcule le prix : `tarif horaire × durée + formule × invités + options`.
+- **Salle** : numéro `R-XXXXXX`. Le client peut aussi réserver des repas et boissons de la carte, en quantité précise ou « pour chaque invité » (le nombre suit le nombre d'invités). Les demandes sont « en attente » jusqu'à confirmation (ou confirmées d'office si l'option est activée). Le serveur vérifie les chevauchements (avec un temps de battement réglable), les fermetures, le délai minimum, la capacité et la durée, puis calcule le prix : `tarif horaire × durée + formule × invités + options`.
 - **Paiement** : sur place uniquement (pas de paiement en ligne).
 - **Prix et options** : le prix d'une ligne est toujours recalculé côté serveur à partir de la carte.
 

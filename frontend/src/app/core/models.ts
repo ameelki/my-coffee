@@ -28,6 +28,6 @@ export interface RoomInfo { packages: RoomPackage[]; extras: RoomExtra[]; }
 export interface DayInfo { date: string; closed: boolean; reason?: string; booked: string[]; }
 export interface Reservation {
   id: number; code: string; customerName: string; email: string; phone: string; eventType?: string; date: string;
-  startTime: string; endTime: string; guests: number; packageName?: string; extrasText?: string; note?: string;
+  startTime: string; endTime: string; guests: number; packageName?: string; extrasText?: string; mealsText?: string; note?: string;
   total: number; deposit: number; status: ReservationStatus; adminNote?: string; createdAt: string;
 }

@@ -25,6 +25,7 @@ import { RESERVATION_LABEL, dateFr, errMsg, money } from '../core/util';
           <p style="margin:8px 0 4px">{{ r.customerName }} · {{ r.guests }} pers. · {{ r.eventType }} · <span class="muted">{{ r.code }}</span></p>
           <p class="small muted" style="margin:0">{{ r.phone }} · {{ r.email }}</p>
           @if (r.packageName || r.extrasText) { <p class="small" style="margin:6px 0 0">{{ r.packageName }}{{ r.extrasText ? ' + ' + r.extrasText : '' }}</p> }
+          @if (r.mealsText) { <p class="small" style="margin:6px 0 0"><b>Repas :</b> {{ r.mealsText }}</p> }
           @if (r.note) { <p class="small" style="margin:6px 0 0">« {{ r.note }} »</p> }
           <p style="margin:8px 0"><b>{{ money(r.total) }}</b> <span class="muted">· acompte {{ money(r.deposit) }}</span></p>
           @if (r.status === 'PENDING' || r.status === 'CONFIRMED') {

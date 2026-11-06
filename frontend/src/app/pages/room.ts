@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Api } from '../core/api.service';
 import { AuthService } from '../core/auth.service';
 import { SettingsService } from '../core/settings.service';
-import { DayInfo, Reservation, RoomExtra, RoomInfo, RoomPackage } from '../core/models';
+import { DayInfo, Menu, Product, Reservation, RoomExtra, RoomInfo, RoomPackage } from '../core/models';
 import { dateFr, errMsg, isoDate, money } from '../core/util';
 
 @Component({
@@ -97,6 +97,29 @@ import { dateFr, errMsg, isoDate, money } from '../core/util';
               </section>
             }
 
+            @if (settings.bool('room.meals.enabled') && menu && menu.products.length) {
+              <section class="card">
+                <h2>Repas et boissons</h2>
+                <p class="muted small">Choisissez ce que le café prépare pour vos invités. Cochez « pour chaque invité » pour commander automatiquement {{ guests }} portions.</p>
+                @for (c of menu.categories; track c.id) {
+                  @if (mealsOf(c.id).length) {
+                    <div class="lbl" style="margin:12px 0 6px">{{ c.icon }} {{ c.name }}</div>
+                    @for (p of mealsOf(c.id); track p.id) {
+                      <div class="opt" [class.on]="mealQty(p) > 0">
+                        <span><b>{{ p.name }}</b> <span class="price">{{ money(p.price) }}</span></span>
+                        <span class="row" style="gap:10px; flex-wrap:nowrap">
+                          <label class="check small"><input type="checkbox" [checked]="meal(p.id).perGuest" (change)="togglePerGuest(p.id)" [attr.aria-label]="'Un ' + p.name + ' par invité'" /> par invité</label>
+                          @if (!meal(p.id).perGuest) {
+                            <span class="qty"><button type="button" (click)="mealStep(p.id, -1)" aria-label="Moins">−</button><span>{{ meal(p.id).quantity }}</span><button type="button" (click)="mealStep(p.id, 1)" aria-label="Plus">+</button></span>
+                          } @else { <b>× {{ guests }}</b> }
+                        </span>
+                      </div>
+                    }
+                  }
+                }
+              </section>
+            }
+
             <section class="card">
               <h2>Vos coordonnées</h2>
               <div class="form-grid">
@@ -116,6 +139,7 @@ import { dateFr, errMsg, isoDate, money } from '../core/util';
               <dt>Invités</dt><dd>{{ guests }}</dd>
               <dt>Location</dt><dd>{{ money(base()) }}</dd>
               @if (pkg(); as p) { <dt>{{ p.name }}</dt><dd>{{ money(p.pricePerPerson * guests) }}</dd> }
+              @for (m of chosenMeals(); track m.p.id) { <dt>{{ m.qty }} × {{ m.p.name }}</dt><dd>{{ money(m.qty * m.p.price) }}</dd> }
               @for (x of chosenExtras(); track x.id) { <dt>{{ x.name }}</dt><dd>{{ money(x.perPerson ? x.price * guests : x.price) }}</dd> }
             </dl>
             <div class="row between" style="margin-top:14px"><b>Total estimé</b><span class="big-total">{{ money(total()) }}</span></div>
@@ -140,6 +164,8 @@ export class RoomPage implements OnInit {
   dow = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
   info: RoomInfo | null = null;
+  menu: Menu | null = null;
+  meals: Record<number, { perGuest: boolean; quantity: number }> = {};
   month = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   dayMap: Record<string, DayInfo> = {};
   date = '';
@@ -161,6 +187,7 @@ export class RoomPage implements OnInit {
     const u = this.auth.user();
     if (u) { this.name = u.name; this.phone = u.phone || ''; this.email = u.email; }
     this.api.get<RoomInfo>('/public/room').subscribe({ next: (r) => (this.info = r) });
+    this.api.get<Menu>('/public/menu').subscribe({ next: (m) => (this.menu = m) });
     this.loadMonth();
     this.eventType = this.eventTypes()[0] || '';
   }
@@ -235,9 +262,18 @@ export class RoomPage implements OnInit {
     const p = this.pkg();
     if (p) t += Number(p.pricePerPerson) * this.guests;
     for (const x of this.chosenExtras()) t += Number(x.price) * (x.perPerson ? this.guests : 1);
+    for (const m of this.chosenMeals()) t += Number(m.p.price) * m.qty;
     return Math.round(t * 100) / 100;
   }
   deposit(): number { return Math.round(this.total() * this.settings.num('room.depositPercent')) / 100; }
+  mealsOf(categoryId: number): Product[] { return (this.menu?.products || []).filter((p) => p.category?.id === categoryId && p.available); }
+  meal(id: number) { return this.meals[id] || { perGuest: false, quantity: 0 }; }
+  mealQty(p: Product): number { const m = this.meal(p.id); return m.perGuest ? this.guests : m.quantity; }
+  togglePerGuest(id: number) { const m = this.meal(id); this.meals = { ...this.meals, [id]: { perGuest: !m.perGuest, quantity: m.quantity } }; }
+  mealStep(id: number, d: number) { const m = this.meal(id); this.meals = { ...this.meals, [id]: { perGuest: false, quantity: Math.max(0, m.quantity + d) } }; }
+  chosenMeals(): { p: Product; qty: number }[] {
+    return (this.menu?.products || []).map((p) => ({ p, qty: this.mealQty(p) })).filter((x) => x.qty > 0);
+  }
   hasExtra(id: number): boolean { return this.extraIds.includes(id); }
   toggleExtra(id: number) { this.extraIds = this.hasExtra(id) ? this.extraIds.filter((x) => x !== id) : [...this.extraIds, id]; }
 
@@ -262,6 +298,7 @@ export class RoomPage implements OnInit {
       customerName: this.name, email: this.email, phone: this.phone, eventType: this.eventType || this.eventTypes()[0] || null,
       date: this.date, startTime: this.start, endTime: this.end, guests: this.guests,
       packageId: this.packageId, extraIds: this.extraIds, note: this.note || null,
+      meals: Object.keys(this.meals).map((k) => ({ productId: Number(k), perGuest: this.meals[Number(k)].perGuest, quantity: this.meals[Number(k)].quantity })).filter((m) => m.perGuest || m.quantity > 0),
     };
     this.api.post<Reservation>('/public/reservations', body).subscribe({
       next: (r) => {
@@ -273,5 +310,5 @@ export class RoomPage implements OnInit {
     });
   }
 
-  reset() { this.done = null; this.date = ''; this.loadMonth(); }
+  reset() { this.done = null; this.date = ''; this.meals = {}; this.loadMonth(); }
 }

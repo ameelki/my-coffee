@@ -20,6 +20,7 @@ export class RoomAdminPage {
   rules: SettingField[] = [
     { key: 'room.enabled', label: 'Réservations ouvertes', type: 'bool' },
     { key: 'room.autoConfirm', label: 'Confirmer automatiquement les demandes', type: 'bool' },
+    { key: 'room.meals.enabled', label: 'Permettre de réserver des repas avec la salle', type: 'bool' },
     { key: 'room.name', label: 'Nom de la salle', type: 'text' },
     { key: 'room.description', label: 'Description', type: 'textarea' },
     { key: 'room.hourlyRate', label: 'Tarif horaire de la salle (€)', type: 'number' },

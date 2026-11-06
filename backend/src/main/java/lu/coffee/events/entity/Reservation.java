@@ -22,6 +22,8 @@ public class Reservation extends BaseEntity {
     public String packageName;
     @Column(length = 1000)
     public String extrasText;
+    @Column(length = 2000)
+    public String mealsText;
     @Column(length = 1000)
     public String note;
     @Column(precision = 10, scale = 2)
