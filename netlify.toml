@@ -1,7 +1,6 @@
 [build]
-  base = "frontend"
-  command = "npm install && npm run build"
-  publish = "dist/coffee/browser"
+  command = "cd frontend && npm install && npm run build"
+  publish = "frontend/dist/coffee/browser"
 
 [build.environment]
   NODE_VERSION = "20"
