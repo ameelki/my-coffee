@@ -33,13 +33,7 @@ export interface Column { key: string; label: string; type?: 'text' | 'money' | 
         @for (it of items; track it.id) {
           <tr>
             @for (c of columns; track c.key) {
-              <td [attr.data-label]="c.label">@if (c.type === 'image') {
-                <label class="thumb-btn" title="Cliquer pour choisir une photo">
-                  <img class="thumb-sm" [src]="img(it)" [alt]="'Photo de ' + it.name" loading="lazy" />
-                  <span class="small">{{ it.hasImage ? 'Changer' : 'Ajouter' }}</span>
-                  <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="sr" (change)="quickPhoto($event, it)" [attr.aria-label]="'Choisir la photo de ' + it.name" />
-                </label>
-              } @else { {{ cell(it, c) }} }</td>
+              <td [attr.data-label]="c.label">@if (c.type === 'image') { <img class="thumb-sm" [src]="img(it)" alt="" loading="lazy" /> } @else { {{ cell(it, c) }} }</td>
             }
             <td style="white-space:nowrap">
               <button class="btn btn-ghost btn-sm" (click)="open(it)">Modifier</button>
@@ -198,23 +192,6 @@ export class CrudList implements OnInit {
       this.preview = URL.createObjectURL(blob);
       this.removeFlag = false;
       this.error = '';
-    } catch {
-      this.error = 'Image illisible. Essayez un autre fichier.';
-    }
-  }
-
-  /** Choisir la photo directement depuis la liste : envoi immédiat, sans ouvrir le formulaire. */
-  async quickPhoto(ev: Event, it: any) {
-    const input = ev.target as HTMLInputElement;
-    const file = input.files && input.files[0];
-    if (!file) return;
-    this.error = '';
-    try {
-      const blob = await compressImage(file);
-      this.api.upload<any>(this.endpoint + '/' + it.id + '/image', blob, 'photo.jpg').subscribe({
-        next: () => { input.value = ''; this.load(); },
-        error: (e) => (this.error = errMsg(e)),
-      });
     } catch {
       this.error = 'Image illisible. Essayez un autre fichier.';
     }
