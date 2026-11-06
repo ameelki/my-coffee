@@ -31,7 +31,7 @@ export interface Column { key: string; label: string; type?: 'text' | 'money' | 
       <tbody>
         @for (it of items; track it.id) {
           <tr>
-            @for (c of columns; track c.key) { <td>{{ cell(it, c) }}</td> }
+            @for (c of columns; track c.key) { <td [attr.data-label]="c.label">{{ cell(it, c) }}</td> }
             <td style="white-space:nowrap">
               <button class="btn btn-ghost btn-sm" (click)="open(it)">Modifier</button>
               <button class="btn btn-ghost btn-sm" (click)="remove(it)">Supprimer</button>

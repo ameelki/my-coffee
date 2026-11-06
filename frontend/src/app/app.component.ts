@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/auth.service';
 import { CartService } from './core/cart.service';
@@ -18,7 +18,7 @@ import { CartDrawer } from './shared/cart-drawer';
           <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 12h18v6a8 8 0 0 1-8 8h-2a8 8 0 0 1-8-8z" fill="#c2531b"/><path d="M23 14h2.5a3 3 0 0 1 0 6H22" fill="none" stroke="#b7cf7a" stroke-width="2"/><path d="M11 3c-1.5 2 1.5 3 0 5M16 3c-1.5 2 1.5 3 0 5" fill="none" stroke="#e9f1d6" stroke-width="1.6" stroke-linecap="round"/></svg>
           {{ settings.str('cafe.name', 'Coffee Events') }}
         </a>
-        <nav class="nav" aria-label="Navigation principale">
+        <nav class="nav" id="menu-principal" [class.open]="menuOpen()" (click)="menuOpen.set(false)" aria-label="Navigation principale">
           <a routerLink="/carte" routerLinkActive="active">La carte</a>
           @if (settings.bool('room.enabled')) { <a routerLink="/salle" routerLinkActive="active">Salle des fêtes</a> }
           <a routerLink="/suivi" routerLinkActive="active">Suivre ma commande</a>
@@ -30,10 +30,11 @@ import { CartDrawer } from './shared/cart-drawer';
           } @else {
             <a routerLink="/connexion" routerLinkActive="active">Connexion</a>
           }
-          @if (settings.bool('orders.enabled')) {
-            <button class="cart-btn" (click)="cart.open.set(true)">Panier<span class="n">{{ cart.count() }}</span></button>
-          }
         </nav>
+        @if (settings.bool('orders.enabled')) {
+          <button class="cart-btn" (click)="cart.open.set(true)">Panier<span class="n">{{ cart.count() }}</span></button>
+        }
+        <button class="burger" type="button" (click)="menuOpen.set(!menuOpen())" [attr.aria-expanded]="menuOpen()" aria-controls="menu-principal" aria-label="Menu">{{ menuOpen() ? '✕' : '☰' }}</button>
       </div>
     </header>
     <main id="contenu"><router-outlet /></main>
@@ -53,6 +54,7 @@ export class AppComponent implements OnInit {
   auth = inject(AuthService);
   cart = inject(CartService);
   toast = inject(ToastService);
+  menuOpen = signal(false);
 
   ngOnInit() { this.settings.load(); }
 }

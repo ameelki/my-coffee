@@ -20,12 +20,12 @@ import { MODE_LABEL, ORDER_LABEL, errMsg, money } from '../core/util';
       <tbody>
         @for (o of shown(); track o.id) {
           <tr>
-            <td><b>{{ o.code }}</b></td>
-            <td>{{ o.createdAt.substring(0, 10) }}<br><span class="muted small">{{ o.createdAt.substring(11, 16) }}</span></td>
-            <td>{{ o.customerName }}<br><span class="muted small">{{ mode[o.mode] }}{{ o.tableLabel ? ' · table ' + o.tableLabel : '' }}</span></td>
-            <td class="small">@for (it of o.items; track it.id) { <div>{{ it.quantity }} × {{ it.name }}{{ it.optionsText ? ' (' + it.optionsText + ')' : '' }}</div> }</td>
-            <td>{{ money(o.total) }}</td>
-            <td>
+            <td data-label="Code"><b>{{ o.code }}</b></td>
+            <td data-label="Date">{{ o.createdAt.substring(0, 10) }}<br><span class="muted small">{{ o.createdAt.substring(11, 16) }}</span></td>
+            <td data-label="Client">{{ o.customerName }}<br><span class="muted small">{{ mode[o.mode] }}{{ o.tableLabel ? ' · table ' + o.tableLabel : '' }}</span></td>
+            <td class="small" data-label="Détail">@for (it of o.items; track it.id) { <div>{{ it.quantity }} × {{ it.name }}{{ it.optionsText ? ' (' + it.optionsText + ')' : '' }}</div> }</td>
+            <td data-label="Total">{{ money(o.total) }}</td>
+            <td data-label="Statut">
               @if (o.status === 'SERVED' || o.status === 'CANCELLED') { <span class="badge" [class]="o.status">{{ label[o.status] }}</span> }
               @else {
                 <select [ngModel]="o.status" (ngModelChange)="setStatus(o, $event)" style="width:auto;min-height:36px" [attr.aria-label]="'Statut ' + o.code">
@@ -33,7 +33,7 @@ import { MODE_LABEL, ORDER_LABEL, errMsg, money } from '../core/util';
                 </select>
               }
             </td>
-            <td><input type="checkbox" [checked]="o.paid" (change)="setPaid(o)" [attr.aria-label]="'Payée ' + o.code" /></td>
+            <td data-label="Payée"><input type="checkbox" [checked]="o.paid" (change)="setPaid(o)" [attr.aria-label]="'Payée ' + o.code" /></td>
           </tr>
         }
       </tbody>

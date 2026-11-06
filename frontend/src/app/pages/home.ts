@@ -42,6 +42,18 @@ import { SettingsService } from '../core/settings.service';
       @if (settings.bool('orders.takeaway.enabled')) { <span>Retrait en {{ settings.num('orders.takeaway.minMinutes') }} min</span> }
       @if (settings.bool('room.enabled')) { <span>Salle jusqu'à {{ settings.num('room.maxGuests') }} personnes</span> }
     </div></div>
+    @if (settings.bool('orders.enabled')) {
+      <section class="section how">
+        <div class="container">
+          <h2>Commander en trois gestes</h2>
+          <ol class="how-list">
+            <li><b>Scannez le code de votre table</b><span>ou ouvrez la carte depuis votre téléphone pour emporter.</span></li>
+            <li><b>Composez votre commande</b><span>Taille, lait, cuisson : tout se choisit en quelques touches.</span></li>
+            <li><b>Suivez-la en direct</b><span>La cuisine la prépare, vous voyez chaque étape sur votre écran.</span></li>
+          </ol>
+        </div>
+      </section>
+    }
     <section class="section">
       <div class="container grid c2">
         @if (settings.bool('orders.enabled')) {
