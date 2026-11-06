@@ -1,6 +1,6 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { LOCALE_ID } from '@angular/core';
+import { LOCALE_ID, NgZone } from '@angular/core';
 import { registerLocaleData } from '@angular/common';
 import localeFr from '@angular/common/locales/fr';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
@@ -19,4 +19,7 @@ bootstrapApplication(AppComponent, {
     provideHttpClient(withInterceptors([authInterceptor])),
     { provide: LOCALE_ID, useValue: 'fr' },
   ],
-}).then((ref) => startDomTranslation(ref.injector.get(I18n))).catch((err) => console.error(err));
+}).then((ref) => {
+  // Hors zone Angular : la traduction du texte ne déclenche aucun cycle de détection de changements.
+  ref.injector.get(NgZone).runOutsideAngular(() => startDomTranslation(ref.injector.get(I18n)));
+}).catch((err) => console.error(err));
