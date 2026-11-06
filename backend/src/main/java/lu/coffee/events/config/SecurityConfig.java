@@ -49,6 +49,8 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration c = new CorsConfiguration();
         c.setAllowedOrigins(origins);
+        // Sites hébergés sur Netlify (démo gratuite) : accepté en plus des adresses de CORS_ORIGINS.
+        c.setAllowedOriginPatterns(List.of("https://*.netlify.app"));
         c.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         c.setAllowedHeaders(List.of("*"));
         UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
