@@ -5,6 +5,7 @@ import { CartService } from './core/cart.service';
 import { SettingsService } from './core/settings.service';
 import { ToastService } from './core/toast.service';
 import { CartDrawer } from './shared/cart-drawer';
+import { I18n, LANGS } from './core/i18n.service';
 
 @Component({
   selector: 'app-root',
@@ -31,6 +32,9 @@ import { CartDrawer } from './shared/cart-drawer';
             <a routerLink="/connexion" routerLinkActive="active">Connexion</a>
           }
         </nav>
+        <select class="lang" aria-label="Langue" [value]="i18n.lang" (change)="i18n.set($any($event.target).value)">
+          @for (l of langs; track l.code) { <option [value]="l.code" [selected]="l.code === i18n.lang">{{ l.code.toUpperCase() }}</option> }
+        </select>
         @if (settings.bool('orders.enabled')) {
           <button class="cart-btn" (click)="cart.open.set(true)">Panier<span class="n">{{ cart.count() }}</span></button>
         }
@@ -54,6 +58,8 @@ export class AppComponent implements OnInit {
   auth = inject(AuthService);
   cart = inject(CartService);
   toast = inject(ToastService);
+  i18n = inject(I18n);
+  langs = LANGS;
   menuOpen = signal(false);
 
   ngOnInit() { this.settings.load(); }

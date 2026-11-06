@@ -8,7 +8,7 @@ import { errMsg, money, parseOptions, productImg } from '../core/util';
 export interface Field {
   key: string;
   label: string;
-  type: 'text' | 'textarea' | 'number' | 'bool' | 'date' | 'select' | 'password' | 'ref' | 'options' | 'image';
+  type: 'text' | 'textarea' | 'number' | 'bool' | 'date' | 'select' | 'password' | 'ref' | 'options' | 'image' | 'i18n';
   options?: { value: string; label: string }[];
   refUrl?: string;
   refLabel?: string;
@@ -91,6 +91,19 @@ export interface Column { key: string; label: string; type?: 'text' | 'money' | 
                   </div>
                 </div>
               }
+              @case ('i18n') {
+                <div class="field">
+                  <span class="lbl">{{ f.label }}</span>
+                  @if (f.hint) { <span class="muted small">{{ f.hint }}</span> }
+                  @for (l of trLangs; track l.code) {
+                    <div class="opt-group">
+                      <b>{{ l.label }}</b>
+                      <div class="field"><label>Nom ({{ l.label }})</label><input [(ngModel)]="tr[l.code].name" /></div>
+                      <div class="field"><label>Description ({{ l.label }})</label><textarea [(ngModel)]="tr[l.code].description"></textarea></div>
+                    </div>
+                  }
+                </div>
+              }
               @case ('options') {
                 <div class="field">
                   <span class="lbl">{{ f.label }}</span>
@@ -162,6 +175,18 @@ export class CrudList implements OnInit {
     }
   }
 
+  trLangs = [{ code: 'pt', label: 'Português' }, { code: 'lb', label: 'Lëtzebuergesch' }, { code: 'de', label: 'Deutsch' }];
+  tr: Record<string, { name: string; description: string }> = this.emptyTr();
+
+  private emptyTr(): Record<string, { name: string; description: string }> {
+    return { pt: { name: '', description: '' }, lb: { name: '', description: '' }, de: { name: '', description: '' } };
+  }
+
+  private i18nKey(): string | null {
+    const f = this.fields.find((x) => x.type === 'i18n');
+    return f ? f.key : null;
+  }
+
   private optionsKey(): string | null {
     const f = this.fields.find((x) => x.type === 'options');
     return f ? f.key : null;
@@ -173,6 +198,14 @@ export class CrudList implements OnInit {
     for (const f of this.fields) if (f.type === 'password') this.editing[f.key] = '';
     const ok = this.optionsKey();
     this.groups = ok ? parseOptions(this.editing[ok]) : [];
+    this.tr = this.emptyTr();
+    const ik = this.i18nKey();
+    if (ik && this.editing[ik]) {
+      try {
+        const p = JSON.parse(this.editing[ik]);
+        for (const l of ['pt', 'lb', 'de']) this.tr[l] = { name: p?.[l]?.name || '', description: p?.[l]?.description || '' };
+      } catch { /* JSON invalide : champs vides */ }
+    }
     this.pendingFile = null;
     this.preview = '';
     this.removeFlag = false;
@@ -218,6 +251,15 @@ export class CrudList implements OnInit {
       body[ok] = clean.length ? JSON.stringify(clean) : null;
     }
     for (const f of this.fields) if (f.type === 'password' && !body[f.key]) delete body[f.key];
+    const ik = this.i18nKey();
+    if (ik) {
+      const out: Record<string, { name: string; description: string }> = {};
+      for (const l of ['pt', 'lb', 'de']) {
+        const n = (this.tr[l].name || '').trim(), d = (this.tr[l].description || '').trim();
+        if (n || d) out[l] = { name: n, description: d };
+      }
+      body[ik] = Object.keys(out).length ? JSON.stringify(out) : null;
+    }
     this.saving = true;
     const call = body.id ? this.api.put<any>(this.endpoint + '/' + body.id, body) : this.api.post<any>(this.endpoint, body);
     call.subscribe({

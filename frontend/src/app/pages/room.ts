@@ -1,3 +1,4 @@
+import { localeTag } from '../core/i18n.service';
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -200,7 +201,7 @@ export class RoomPage implements OnInit {
   eventTypes(): string[] { return this.settings.str('room.eventTypes').split(',').map((s) => s.trim()).filter(Boolean); }
 
   monthKey(): string { return this.month.getFullYear() + '-' + String(this.month.getMonth() + 1).padStart(2, '0'); }
-  monthLabel(): string { return this.month.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }); }
+  monthLabel(): string { return this.month.toLocaleDateString(localeTag(), { month: 'long', year: 'numeric' }); }
 
   loadMonth() {
     this.api.get<DayInfo[]>('/public/room/availability', { month: this.monthKey() }).subscribe({

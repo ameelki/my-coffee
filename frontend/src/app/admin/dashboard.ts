@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Api } from '../core/api.service';
-import { Reservation } from '../core/models';
+import { Category, Product, Reservation } from '../core/models';
 import { dateFr, errMsg, money } from '../core/util';
 
 interface Stats {
@@ -53,6 +53,24 @@ interface Stats {
         }
       </section>
     }
+    <section class="card" style="margin-top:16px">
+      <div class="row" style="justify-content:space-between">
+        <h3>La carte par catégorie</h3>
+        <a class="btn btn-ghost btn-sm" routerLink="/admin/carte">Modifier la carte</a>
+      </div>
+      @if (!groups.length) { <p class="muted">Aucun produit pour l'instant.</p> }
+      @for (g of groups; track g.cat.id) {
+        <div class="cat-block">
+          <h4>{{ g.cat.icon }} {{ g.cat.name }} <span class="muted small">({{ g.items.length }})</span>@if (!g.cat.active) { <span class="badge CANCELLED">masquée</span> }</h4>
+          @for (p of g.items; track p.id) {
+            <div class="line">
+              <span>{{ p.name }}@if (!p.available) { <span class="badge CANCELLED">épuisé</span> }@if (!p.active) { <span class="badge CANCELLED">masqué</span> }</span>
+              <b>{{ money(p.price) }}</b>
+            </div>
+          } @empty { <p class="muted small">Aucun produit dans cette catégorie.</p> }
+        </div>
+      }
+    </section>
   `,
 })
 export class DashboardPage implements OnInit {
@@ -61,8 +79,19 @@ export class DashboardPage implements OnInit {
   dateText = dateFr;
   s: Stats | null = null;
   error = '';
+  groups: { cat: Category; items: Product[] }[] = [];
 
   ngOnInit() {
+    this.api.get<Category[]>('/admin/categories').subscribe({
+      next: (cats) => this.api.get<Product[]>('/admin/products').subscribe({
+        next: (prods) => {
+          const sorted = [...cats].sort((a, b) => a.position - b.position);
+          this.groups = sorted.map((c) => ({ cat: c, items: prods.filter((p) => p.category?.id === c.id).sort((a, b) => a.position - b.position) }));
+          const orphans = prods.filter((p) => !p.category || !cats.some((c) => c.id === p.category!.id));
+          if (orphans.length) this.groups.push({ cat: { id: -1, name: 'Sans catégorie', position: 999, active: true } as Category, items: orphans });
+        },
+      }),
+    });
     this.api.get<Stats>('/admin/stats').subscribe({ next: (x) => (this.s = x), error: (e) => (this.error = errMsg(e)) });
   }
 

@@ -59,11 +59,67 @@ public class DataSeeder implements CommandLineRunner {
         this.seedDemo = seedDemo;
     }
 
+    /** Traductions (portugais | luxembourgeois | allemand) des noms de la carte d'exemple. */
+    private static final java.util.Map<String, String> NAMES = new java.util.HashMap<>();
+
+    static {
+        String[][] t = {
+            {"Cafés", "Cafés", "Kaffi", "Kaffee"}, {"Thés et chocolats", "Chás e chocolates", "Téi a Schockelaten", "Tee und Schokolade"},
+            {"Boissons fraîches", "Bebidas frescas", "Frësch Gedrénks", "Kaltgetränke"}, {"Viennoiseries", "Pastelaria", "Viennoiserien", "Gebäck"},
+            {"Salé", "Salgados", "Salzeg", "Herzhaft"}, {"Desserts", "Sobremesas", "Dessert", "Desserts"},
+            {"Espresso", "Expresso", "Espresso", "Espresso"}, {"Café allongé", "Café longo", "Laange Kaffi", "Lungo"},
+            {"Cappuccino", "Cappuccino", "Cappuccino", "Cappuccino"}, {"Latte macchiato", "Latte macchiato", "Latte macchiato", "Latte macchiato"},
+            {"Flat white", "Flat white", "Flat white", "Flat White"}, {"Thé en feuilles", "Chá em folhas", "Téi a Blieder", "Blatttee"},
+            {"Chocolat chaud maison", "Chocolate quente caseiro", "Hausgemaachte waarme Schockelaut", "Hausgemachte heiße Schokolade"},
+            {"Jus d'orange pressé", "Sumo de laranja natural", "Frësch gepresste Orangejus", "Frisch gepresster Orangensaft"},
+            {"Limonade maison", "Limonada caseira", "Hausgemaachte Limonad", "Hausgemachte Limonade"},
+            {"Eau minérale 50 cl", "Água mineral 50 cl", "Mineralwaasser 50 cl", "Mineralwasser 50 cl"},
+            {"Croissant au beurre", "Croissant de manteiga", "Botter-Croissant", "Butter-Croissant"},
+            {"Pain au chocolat", "Pão de chocolate", "Pain au chocolat", "Schokoladencroissant"},
+            {"Petit-déjeuner du café", "Pequeno-almoço do café", "Frühstück vum Café", "Café-Frühstück"},
+            {"Croque-monsieur", "Croque-monsieur", "Croque-monsieur", "Croque Monsieur"},
+            {"Salade chèvre chaud", "Salada de queijo de cabra quente", "Zalot mat waarmem Geessekéis", "Salat mit warmem Ziegenkäse"},
+            {"Burger du café", "Hambúrguer do café", "Burger vum Café", "Café-Burger"}, {"Quiche du jour", "Quiche do dia", "Quiche vum Dag", "Quiche des Tages"},
+            {"Tiramisu", "Tiramisu", "Tiramisu", "Tiramisu"}, {"Cheesecake aux fruits rouges", "Cheesecake de frutos vermelhos", "Cheesecake mat roude Friichten", "Cheesecake mit roten Früchten"},
+            {"Fondant au chocolat", "Fondant de chocolate", "Schockelasfondant", "Schokoladenfondant"},
+        };
+        for (String[] r : t) NAMES.put(r[0], r[1] + "|" + r[2] + "|" + r[3]);
+    }
+
+    private static String esc(String s) {
+        return s.replace("\\", "\\\\").replace("\"", "\\\"");
+    }
+
+    /** JSON de traductions pour un nom français connu, ou null. */
+    private static String i18nFor(String frenchName) {
+        String v = NAMES.get(frenchName);
+        if (v == null) return null;
+        String[] p = v.split("\\|");
+        return "{\"pt\":{\"name\":\"" + esc(p[0]) + "\"},\"lb\":{\"name\":\"" + esc(p[1]) + "\"},\"de\":{\"name\":\"" + esc(p[2]) + "\"}}";
+    }
+
+    /** Complète les traductions manquantes de la carte d'exemple (aussi sur une base existante). */
+    private void backfillTranslations() {
+        for (Category c : categories.findAll()) {
+            if (c.i18nJson == null && i18nFor(c.name) != null) {
+                c.i18nJson = i18nFor(c.name);
+                categories.save(c);
+            }
+        }
+        for (Product p : products.findAll()) {
+            if (p.i18nJson == null && i18nFor(p.name) != null) {
+                p.i18nJson = i18nFor(p.name);
+                products.save(p);
+            }
+        }
+    }
+
     @Override
     public void run(String... args) {
         ensureUser("Administrateur", adminEmail, adminPassword, Enums.Role.ADMIN);
         ensureUser("Cuisine", kitchenEmail, kitchenPassword, Enums.Role.KITCHEN);
         if (seedDemo && categories.count() == 0) seedMenu();
+        if (seedDemo) backfillTranslations();
     }
 
     private void ensureUser(String name, String email, String password, Enums.Role role) {

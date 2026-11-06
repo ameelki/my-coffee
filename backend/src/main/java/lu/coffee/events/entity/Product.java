@@ -14,6 +14,9 @@ public class Product extends BaseEntity {
     public String imageUrl;
     @ManyToOne
     public Category category;
+    /** Traductions : {"pt":{"name":"","description":""},"lb":{...},"de":{...}}. Le français est la langue de base. */
+    @Column(length = 4000)
+    public String i18nJson;
     /** true si une photo est stockée en base (voir ProductImage). */
     public Boolean hasImage = false;
     public Long imageVersion = 0L;

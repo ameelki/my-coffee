@@ -8,6 +8,9 @@ public class Category extends BaseEntity {
     @Column(length = 500)
     public String description;
     public String icon;
+    /** Traductions : {"pt":{"name":"","description":""},"lb":{...},"de":{...}}. Le français est la langue de base. */
+    @Column(length = 4000)
+    public String i18nJson;
     public int position;
     public boolean active = true;
 }

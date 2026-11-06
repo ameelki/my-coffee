@@ -1,5 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Api } from './api.service';
+import { currentLang } from './i18n.service';
 
 @Injectable({ providedIn: 'root' })
 export class SettingsService {
@@ -14,7 +15,11 @@ export class SettingsService {
     });
   }
 
-  str(k: string, fallback = ''): string { return this.s()[k] ?? fallback; }
+  str(k: string, fallback = ''): string {
+    const l = currentLang();
+    if (l !== 'fr') { const t = this.s()[k + '.' + l]; if (t && t.trim()) return t; }
+    return this.s()[k] ?? fallback;
+  }
   bool(k: string): boolean { return (this.s()[k] ?? '').toLowerCase() === 'true'; }
   num(k: string): number { const n = parseFloat((this.s()[k] ?? '').replace(',', '.')); return isNaN(n) ? 0 : n; }
 

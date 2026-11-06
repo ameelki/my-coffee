@@ -8,6 +8,8 @@ import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { AppComponent } from './app/app.component';
 import { routes } from './app/app.routes';
 import { authInterceptor } from './app/core/auth.interceptor';
+import { I18n } from './app/core/i18n.service';
+import { startDomTranslation } from './app/core/dom-translator';
 
 registerLocaleData(localeFr, 'fr');
 
@@ -17,4 +19,4 @@ bootstrapApplication(AppComponent, {
     provideHttpClient(withInterceptors([authInterceptor])),
     { provide: LOCALE_ID, useValue: 'fr' },
   ],
-}).catch((err) => console.error(err));
+}).then((ref) => startDomTranslation(ref.injector.get(I18n))).catch((err) => console.error(err));

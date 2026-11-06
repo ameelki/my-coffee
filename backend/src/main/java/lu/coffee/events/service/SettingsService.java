@@ -51,6 +51,14 @@ public class SettingsService {
         DEFAULTS.put("room.conditions", "Acompte réglé sur place à la confirmation. Annulation gratuite jusqu'à 7 jours avant l'événement.");
     }
 
+    /** Textes affichés aux clients, traduisibles : clé de base + ".pt", ".lb", ".de" (vide = français). */
+    public static final String[] TRANSLATABLE = {"cafe.tagline", "cafe.about", "cafe.hours", "room.name", "room.description", "room.conditions", "orders.message"};
+    public static final String[] LANGS = {"pt", "lb", "de"};
+
+    static {
+        for (String k : TRANSLATABLE) for (String l : LANGS) DEFAULTS.put(k + "." + l, "");
+    }
+
     private final SettingRepository repo;
 
     public SettingsService(SettingRepository repo) {

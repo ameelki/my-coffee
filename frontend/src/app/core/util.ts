@@ -1,3 +1,4 @@
+import { localeTag } from './i18n.service';
 import { environment } from '../../environments/environment';
 import { OptionGroup, OrderStatus, ReservationStatus } from './models';
 
@@ -36,7 +37,7 @@ export function isoDate(d: Date): string {
 
 export function dateFr(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  return new Date(y, m - 1, d).toLocaleDateString(localeTag(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 export function timeHm(t: string | undefined): string {

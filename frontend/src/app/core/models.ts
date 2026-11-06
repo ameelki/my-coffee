@@ -4,12 +4,12 @@ export type OrderStatus = 'NEW' | 'PREPARING' | 'READY' | 'SERVED' | 'CANCELLED'
 export type ReservationStatus = 'PENDING' | 'CONFIRMED' | 'REFUSED' | 'CANCELLED' | 'COMPLETED';
 
 export interface User { id: number; name: string; email: string; phone?: string; role: Role; active: boolean; }
-export interface Category { id: number; name: string; description?: string; icon?: string; position: number; active: boolean; }
+export interface Category { id: number; name: string; description?: string; icon?: string; position: number; active: boolean; i18nJson?: string | null; }
 export interface OptionChoice { name: string; price: number; }
 export interface OptionGroup { name: string; required: boolean; multi: boolean; choices: OptionChoice[]; }
 export interface Product {
   id: number; name: string; description?: string; price: number; imageUrl?: string; category?: Category;
-  available: boolean; active: boolean; position: number; prepMinutes?: number; hasImage?: boolean; imageVersion?: number; tags?: string; optionsJson?: string;
+  available: boolean; active: boolean; position: number; prepMinutes?: number; hasImage?: boolean; imageVersion?: number; tags?: string; optionsJson?: string; i18nJson?: string | null;
 }
 export interface Menu { categories: Category[]; products: Product[]; }
 export interface CartLine {

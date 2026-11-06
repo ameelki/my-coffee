@@ -18,6 +18,7 @@ export class MenuAdminPage {
     { key: 'name', label: 'Nom', type: 'text' },
     { key: 'icon', label: 'Icône (un emoji)', type: 'text' },
     { key: 'description', label: 'Description', type: 'text' },
+    { key: 'i18nJson', label: 'Traductions', type: 'i18n', hint: 'Le français reste la langue de base. Laissez vide pour afficher le français.' },
     { key: 'position', label: 'Position', type: 'number', hint: 'Plus petit = plus haut dans la carte.' },
     { key: 'active', label: 'Visible sur le site', type: 'bool' },
   ];
@@ -30,6 +31,7 @@ export class MenuAdminPage {
     { key: 'price', label: 'Prix (€)', type: 'number' },
     { key: 'category', label: 'Catégorie', type: 'ref', refUrl: '/admin/categories' },
     { key: 'image', label: 'Photo', type: 'image', hint: 'JPG, PNG ou WebP, réduite automatiquement. Sans photo, une image par défaut s\'affiche.' },
+    { key: 'i18nJson', label: 'Traductions (nom et description)', type: 'i18n', hint: 'Portugais, luxembourgeois, allemand. Le français reste la langue de base.' },
     { key: 'tags', label: 'Étiquettes', type: 'text', hint: 'Séparées par des virgules : vegan, sans gluten…' },
     { key: 'prepMinutes', label: 'Temps de préparation (min)', type: 'number' },
     { key: 'position', label: 'Position', type: 'number' },

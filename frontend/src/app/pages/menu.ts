@@ -1,3 +1,4 @@
+import { I18n } from '../core/i18n.service';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -31,21 +32,21 @@ import { errMsg, money, parseOptions, productImg } from '../core/util';
         <div class="cats" role="tablist" aria-label="Catégories">
           <button class="chip" [class.on]="active() === null" (click)="active.set(null)">Tout</button>
           @for (c of m.categories; track c.id) {
-            <button class="chip" [class.on]="active() === c.id" (click)="active.set(c.id)">{{ c.icon }} {{ c.name }}</button>
+            <button class="chip" [class.on]="active() === c.id" (click)="active.set(c.id)">{{ c.icon }} {{ i18n.field(c, 'name') }}</button>
           }
         </div>
         @for (c of m.categories; track c.id) {
           @if (active() === null || active() === c.id) {
             <section style="margin:24px 0">
-              <h2>{{ c.icon }} {{ c.name }}</h2>
-              @if (c.description) { <p class="muted">{{ c.description }}</p> }
+              <h2>{{ c.icon }} {{ i18n.field(c, 'name') }}</h2>
+              @if (c.description) { <p class="muted">{{ i18n.field(c, 'description') }}</p> }
               <div class="grid c2">
                 @for (p of itemsOf(m, c); track p.id) {
                   <div class="prod" [class.off]="!p.available" role="button" tabindex="0" (click)="open(p)" (keydown.enter)="open(p)">
-                    <div class="pic"><img [src]="img(p)" [alt]="p.name" loading="lazy" /></div>
+                    <div class="pic"><img [src]="img(p)" [alt]="i18n.field(p, 'name')" loading="lazy" /></div>
                     <div>
-                      <h3>{{ p.name }}</h3>
-                      @if (p.description) { <p class="desc">{{ p.description }}</p> }
+                      <h3>{{ i18n.field(p, 'name') }}</h3>
+                      @if (p.description) { <p class="desc">{{ i18n.field(p, 'description') }}</p> }
                       <div class="row between">
                         <span class="price">{{ money(p.price) }}</span>
                         @if (!p.available) { <span class="badge CANCELLED">Épuisé</span> } @else { <span class="badge READY">Ajouter</span> }
@@ -66,9 +67,9 @@ import { errMsg, money, parseOptions, productImg } from '../core/util';
 
     @if (sel) {
       <div class="overlay" (click)="sel = null">
-        <div class="modal" role="dialog" [attr.aria-label]="sel.name" (click)="$event.stopPropagation()">
-          <h2>{{ sel.name }}</h2>
-          @if (sel.description) { <p class="muted">{{ sel.description }}</p> }
+        <div class="modal" role="dialog" [attr.aria-label]="i18n.field(sel, 'name')" (click)="$event.stopPropagation()">
+          <h2>{{ i18n.field(sel, 'name') }}</h2>
+          @if (sel.description) { <p class="muted">{{ i18n.field(sel, 'description') }}</p> }
           @for (g of groups; track g.name) {
             <div class="stack" style="margin-bottom:14px">
               <div class="lbl">{{ g.name }} @if (g.required) { <span class="muted small">(obligatoire)</span> } @else { <span class="muted small">(facultatif)</span> }</div>
@@ -92,6 +93,7 @@ import { errMsg, money, parseOptions, productImg } from '../core/util';
   `,
 })
 export class MenuPage implements OnInit {
+  i18n = inject(I18n);
   private api = inject(Api);
   private route = inject(ActivatedRoute);
   private toast = inject(ToastService);
@@ -124,8 +126,8 @@ export class MenuPage implements OnInit {
     if (!p.available || !this.settings.bool('orders.enabled')) return;
     const groups = parseOptions(p.optionsJson);
     if (!groups.length) {
-      this.cart.add({ productId: p.id, name: p.name, unitPrice: Number(p.price), qty: 1, choices: [], optionsText: '' });
-      this.toast.show(p.name + ' ajouté au panier');
+      this.cart.add({ productId: p.id, name: this.i18n.field(p, 'name'), unitPrice: Number(p.price), qty: 1, choices: [], optionsText: '' });
+      this.toast.show(this.i18n.tr('§ ajouté au panier'.replace('§', this.i18n.field(p, 'name'))));
       return;
     }
     this.sel = p;
@@ -161,8 +163,8 @@ export class MenuPage implements OnInit {
     const choices: string[] = [];
     const names: string[] = [];
     for (const g of this.groups) for (const c of g.choices) if (this.isOn(g, c)) { choices.push(g.name + '|' + c.name); names.push(c.name); }
-    this.cart.add({ productId: this.sel.id, name: this.sel.name, unitPrice: this.unit(), qty: this.qty, choices, optionsText: names.join(', '), note: this.note.trim() || undefined });
-    this.toast.show(this.sel.name + ' ajouté au panier');
+    this.cart.add({ productId: this.sel.id, name: this.i18n.field(this.sel, 'name'), unitPrice: this.unit(), qty: this.qty, choices, optionsText: names.join(', '), note: this.note.trim() || undefined });
+    this.toast.show(this.i18n.tr('§ ajouté au panier'.replace('§', this.i18n.field(this.sel, 'name'))));
     this.sel = null;
   }
 }
