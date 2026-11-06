@@ -6,10 +6,9 @@
 [build.environment]
   NODE_VERSION = "20"
 
-# IMPORTANT : remplacez l'URL ci-dessous par celle de votre backend Render.
 [[redirects]]
   from = "/api/*"
-  to = "https://REMPLACEZ-MOI.onrender.com/api/:splat"
+  to = "https://coffee-backend-82dz.onrender.com/api/:splat"
   status = 200
   force = true
 
