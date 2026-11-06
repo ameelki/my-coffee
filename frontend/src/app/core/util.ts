@@ -1,0 +1,47 @@
+import { OptionGroup, OrderStatus, ReservationStatus } from './models';
+
+export function money(v: number | string | null | undefined): string {
+  const n = Number(v ?? 0);
+  return n.toFixed(2).replace('.', ',') + ' €';
+}
+
+export function errMsg(e: any): string {
+  return e?.error?.message || (e?.status === 0 ? 'Serveur injoignable. Vérifiez votre connexion.' : 'Une erreur est survenue.');
+}
+
+export function parseOptions(json?: string | null): OptionGroup[] {
+  if (!json) return [];
+  try {
+    const v = JSON.parse(json);
+    return Array.isArray(v) ? v : [];
+  } catch {
+    return [];
+  }
+}
+
+export const ORDER_LABEL: Record<OrderStatus, string> = {
+  NEW: 'Reçue', PREPARING: 'En préparation', READY: 'Prête', SERVED: 'Servie', CANCELLED: 'Annulée',
+};
+export const RESERVATION_LABEL: Record<ReservationStatus, string> = {
+  PENDING: 'En attente', CONFIRMED: 'Confirmée', REFUSED: 'Refusée', CANCELLED: 'Annulée', COMPLETED: 'Terminée',
+};
+export const MODE_LABEL: Record<string, string> = { DINE_IN: 'Sur place', TAKEAWAY: 'À emporter' };
+
+export function isoDate(d: Date): string {
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return d.getFullYear() + '-' + m + '-' + day;
+}
+
+export function dateFr(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+export function timeHm(t: string | undefined): string {
+  return (t || '').substring(0, 5);
+}
+
+export function minutesAgo(iso: string): number {
+  return Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+}
