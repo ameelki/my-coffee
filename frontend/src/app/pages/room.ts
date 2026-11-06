@@ -35,6 +35,21 @@ import { dateFr, errMsg, isoDate, money } from '../core/util';
       } @else {
         <div class="two-col">
           <div class="stack">
+            @if (info && info.packages.length) {
+              <section class="card">
+                <h2>Formule</h2>
+                <div class="opt" [class.on]="packageId === null" role="button" tabindex="0" (click)="packageId = null" (keydown.enter)="packageId = null">
+                  <span><b>Location seule</b><br><span class="muted small">Vous apportez ou commandez au bar.</span></span><span></span>
+                </div>
+                @for (p of info.packages; track p.id) {
+                  <div class="opt" [class.on]="packageId === p.id" role="button" tabindex="0" (click)="packageId = p.id" (keydown.enter)="packageId = p.id">
+                    <span><b>{{ p.name }}</b><br><span class="muted small">{{ p.description }} (dès {{ p.minGuests }} pers.)</span></span>
+                    <span class="price">{{ money(p.pricePerPerson) }}<small>/pers.</small></span>
+                  </div>
+                }
+              </section>
+            }
+
             <section class="card">
               <h2>Date</h2>
               <div class="row between" style="margin-bottom:12px">
@@ -46,12 +61,17 @@ import { dateFr, errMsg, isoDate, money } from '../core/util';
                 @for (d of dow; track d) { <div class="dow">{{ d }}</div> }
                 @for (c of cells(); track $index) {
                   @if (c) {
-                    <button class="day" type="button" [disabled]="blocked(c)" [class.closed]="isClosed(c)" [class.part]="isPart(c)" [class.sel]="date === c"
+                    <button class="day" type="button" [disabled]="blocked(c)" [class.closed]="isClosed(c)" [class.past]="!isClosed(c) && blocked(c)" [class.part]="isPart(c)" [class.sel]="date === c"
                             [attr.aria-label]="dateText(c)" [attr.aria-pressed]="date === c" (click)="pick(c)">{{ dayNum(c) }}</button>
                   } @else { <div></div> }
                 }
               </div>
-              <p class="muted small" style="margin-top:10px">Un point orange indique une date déjà partiellement réservée. Les dates hachurées sont fermées.</p>
+              <p class="legend small muted">
+                <span><i class="sw sw-free"></i>Disponible</span>
+                <span><i class="sw sw-part"></i>Partiellement réservé</span>
+                <span><i class="sw sw-closed"></i>Fermé / indisponible</span>
+                <span><i class="sw sw-past"></i>Trop tôt ou passé</span>
+              </p>
             </section>
 
             <section class="card">
@@ -69,21 +89,6 @@ import { dateFr, errMsg, isoDate, money } from '../core/util';
               </div>
               <p class="muted small">Durée de {{ settings.num('room.minHours') }} à {{ settings.num('room.maxHours') }} h, jusqu'à {{ settings.num('room.maxGuests') }} personnes.</p>
             </section>
-
-            @if (info && info.packages.length) {
-              <section class="card">
-                <h2>Formule</h2>
-                <div class="opt" [class.on]="packageId === null" role="button" tabindex="0" (click)="packageId = null" (keydown.enter)="packageId = null">
-                  <span><b>Location seule</b><br><span class="muted small">Vous apportez ou commandez au bar.</span></span><span></span>
-                </div>
-                @for (p of info.packages; track p.id) {
-                  <div class="opt" [class.on]="packageId === p.id" role="button" tabindex="0" (click)="packageId = p.id" (keydown.enter)="packageId = p.id">
-                    <span><b>{{ p.name }}</b><br><span class="muted small">{{ p.description }} (dès {{ p.minGuests }} pers.)</span></span>
-                    <span class="price">{{ money(p.pricePerPerson) }}<small>/pers.</small></span>
-                  </div>
-                }
-              </section>
-            }
 
             @if (info && info.extras.length) {
               <section class="card">
