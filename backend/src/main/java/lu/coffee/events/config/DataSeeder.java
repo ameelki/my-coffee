@@ -36,13 +36,14 @@ public class DataSeeder implements CommandLineRunner {
     private final RoomPackageRepository packages;
     private final RoomExtraRepository extras;
     private final SettingRepository settings;
+    private final ProductImageRepository images;
     private final PasswordEncoder encoder;
     private final String adminEmail, adminPassword, kitchenEmail, kitchenPassword;
     private final boolean seedDemo;
 
     public DataSeeder(UserRepository users, CategoryRepository categories, ProductRepository products,
                       DiningTableRepository tables, RoomPackageRepository packages, RoomExtraRepository extras,
-                      SettingRepository settings, PasswordEncoder encoder,
+                      SettingRepository settings, ProductImageRepository images, PasswordEncoder encoder,
                       @Value("${app.admin.email}") String adminEmail, @Value("${app.admin.password}") String adminPassword,
                       @Value("${app.kitchen.email}") String kitchenEmail, @Value("${app.kitchen.password}") String kitchenPassword,
                       @Value("${app.seed-demo}") boolean seedDemo) {
@@ -53,6 +54,7 @@ public class DataSeeder implements CommandLineRunner {
         this.packages = packages;
         this.extras = extras;
         this.settings = settings;
+        this.images = images;
         this.encoder = encoder;
         this.adminEmail = adminEmail;
         this.adminPassword = adminPassword;
@@ -124,6 +126,7 @@ public class DataSeeder implements CommandLineRunner {
         if (seedDemo) backfillTranslations();
         seedChristmasMenu();
         hideRegularMenu();
+        attachNoelPhotos();
     }
 
     private void ensureUser(String name, String email, String password, Enums.Role role) {
@@ -359,6 +362,44 @@ public class DataSeeder implements CommandLineRunner {
             if (p.category == null || p.category.name == null || !p.category.name.startsWith("Noël")) { p.active = false; products.save(p); }
         }
         log.info("Carte habituelle désactivée : seul le menu de Noël reste visible.");
+    }
+
+    /** Photos du menu de Noël (src/main/resources/noel) : rattachées une seule fois aux produits qui n'ont pas encore de photo. */
+    private static final String[][] NOEL_PHOTOS = {
+        {"Box apéritif à composer soi-même", "box"}, {"Plateau charcuterie & fromages", "charcuterie"}, {"Plateau de crevettes & saumon fumé", "crevettes"},
+        {"Bacalhau à Gomes de Sá", "gomes"}, {"Bacalhau com Todos", "todos"}, {"Bacalhau com Natas", "natas"}, {"Bacalhau com Broa", "natas"},
+        {"Bacalhau à Braga", "braga"}, {"Saumon rôti au four", "saumon"}, {"Rôti de porc", "porc"}, {"Rôti de veau", "veau"},
+        {"Dinde à la portugaise", "dinde"}, {"Pommes rôties à la cannelle", "pommes"}, {"Rabanadas", "rabanadas"}, {"Plateau de fruits frais", "fruits"},
+    };
+
+    private void attachNoelPhotos() {
+        String flag = "seed.noel.photos.v1";
+        if (settings.existsById(flag) || !settings.existsById(NOEL_FLAG)) return;
+        Setting f = new Setting();
+        f.key = flag;
+        f.value = "done";
+        settings.save(f);
+        for (String[] row : NOEL_PHOTOS) {
+            try {
+                Product p = products.findAll().stream().filter(x -> row[0].equals(x.name)).findFirst().orElse(null);
+                if (p == null || Boolean.TRUE.equals(p.hasImage)) continue;
+                byte[] bytes;
+                try (java.io.InputStream in = new org.springframework.core.io.ClassPathResource("noel/" + row[1] + ".jpg").getInputStream()) {
+                    bytes = in.readAllBytes();
+                }
+                ProductImage img = new ProductImage();
+                img.productId = p.id;
+                img.contentType = "image/jpeg";
+                img.data = bytes;
+                images.save(img);
+                p.hasImage = true;
+                p.imageVersion = System.currentTimeMillis();
+                products.save(p);
+            } catch (Exception e) {
+                log.warn("Photo non ajoutée pour {} : {}", row[0], e.getMessage());
+            }
+        }
+        log.info("Photos du menu de Noël ajoutées.");
     }
 
     private void setIfEmpty(String key, String value) {
