@@ -123,6 +123,7 @@ public class DataSeeder implements CommandLineRunner {
         if (seedDemo && categories.count() == 0) seedMenu();
         if (seedDemo) backfillTranslations();
         seedChristmasMenu();
+        hideRegularMenu();
     }
 
     private void ensureUser(String name, String email, String password, Enums.Role role) {
@@ -341,6 +342,23 @@ public class DataSeeder implements CommandLineRunner {
         setIfEmpty("orders.message.de", "Weihnachts- und Silvestermenü: auf Bestellung, zum Mitnehmen oder mit Lieferung, vom 24. bis 31. Dezember. "
                 + "Reservierungen bis 18. Dezember (Weihnachten) und bis 28. Dezember (Silvester).");
         log.info("Menu de Noël ajouté (4 catégories, 15 produits).");
+    }
+
+    /** Une seule fois : désactive la carte habituelle pour ne garder que le menu de Noël (réactivable depuis l'admin). */
+    private void hideRegularMenu() {
+        String flag = "seed.noel.only.v1";
+        if (settings.existsById(flag) || !settings.existsById(NOEL_FLAG)) return;
+        Setting f = new Setting();
+        f.key = flag;
+        f.value = "done";
+        settings.save(f);
+        for (Category c : categories.findAll()) {
+            if (c.name != null && !c.name.startsWith("Noël")) { c.active = false; categories.save(c); }
+        }
+        for (Product p : products.findAll()) {
+            if (p.category == null || p.category.name == null || !p.category.name.startsWith("Noël")) { p.active = false; products.save(p); }
+        }
+        log.info("Carte habituelle désactivée : seul le menu de Noël reste visible.");
     }
 
     private void setIfEmpty(String key, String value) {
