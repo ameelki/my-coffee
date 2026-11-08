@@ -35,13 +35,14 @@ public class DataSeeder implements CommandLineRunner {
     private final DiningTableRepository tables;
     private final RoomPackageRepository packages;
     private final RoomExtraRepository extras;
+    private final SettingRepository settings;
     private final PasswordEncoder encoder;
     private final String adminEmail, adminPassword, kitchenEmail, kitchenPassword;
     private final boolean seedDemo;
 
     public DataSeeder(UserRepository users, CategoryRepository categories, ProductRepository products,
                       DiningTableRepository tables, RoomPackageRepository packages, RoomExtraRepository extras,
-                      PasswordEncoder encoder,
+                      SettingRepository settings, PasswordEncoder encoder,
                       @Value("${app.admin.email}") String adminEmail, @Value("${app.admin.password}") String adminPassword,
                       @Value("${app.kitchen.email}") String kitchenEmail, @Value("${app.kitchen.password}") String kitchenPassword,
                       @Value("${app.seed-demo}") boolean seedDemo) {
@@ -51,6 +52,7 @@ public class DataSeeder implements CommandLineRunner {
         this.tables = tables;
         this.packages = packages;
         this.extras = extras;
+        this.settings = settings;
         this.encoder = encoder;
         this.adminEmail = adminEmail;
         this.adminPassword = adminPassword;
@@ -120,6 +122,7 @@ public class DataSeeder implements CommandLineRunner {
         ensureUser("Cuisine", kitchenEmail, kitchenPassword, Enums.Role.KITCHEN);
         if (seedDemo && categories.count() == 0) seedMenu();
         if (seedDemo) backfillTranslations();
+        seedChristmasMenu();
     }
 
     private void ensureUser(String name, String email, String password, Enums.Role role) {
@@ -202,6 +205,151 @@ public class DataSeeder implements CommandLineRunner {
         extra("Sono et micro", "Enceintes, micro sans fil et playlist.", "40", false);
         extra("Gâteau d'événement", "Gâteau sur mesure pour toute la table.", "4.5", true);
         extra("Ménage de fin de soirée", "Nous nous occupons du rangement.", "50", false);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Menu de Noël & Nouvel An (spécialités portugaises, sur commande) : ajouté une seule fois.
+    // Le prix du produit = prix « 2 personnes » ; l'option Portion ajoute le supplément pour 5 ou 10 personnes.
+    // Ensuite tout se modifie depuis l'espace admin (prix, photos, disponibilité, traductions).
+    // ---------------------------------------------------------------------------------------------
+    private static final String NOEL_FLAG = "seed.noel.v1";
+
+    private static String q(String s) {
+        return "\"" + esc(s) + "\"";
+    }
+
+    /** Option « Portion » : 2 personnes (prix de base), puis suppléments pour 5 et 10 personnes (p5 peut être null). */
+    private static String portion(int p2, Integer p5, int p10) {
+        StringBuilder sb = new StringBuilder("{\"name\":\"Portion\",\"required\":true,\"multi\":false,\"choices\":[");
+        sb.append("{\"name\":\"2 personnes\",\"price\":0}");
+        if (p5 != null) sb.append(",{\"name\":\"5 personnes\",\"price\":").append(p5 - p2).append("}");
+        sb.append(",{\"name\":\"10 personnes\",\"price\":").append(p10 - p2).append("}]}");
+        return sb.toString();
+    }
+
+    private static String choice(String name, boolean required, boolean multi, String... values) {
+        StringBuilder sb = new StringBuilder("{\"name\":" + q(name) + ",\"required\":" + required + ",\"multi\":" + multi + ",\"choices\":[");
+        for (int i = 0; i < values.length; i++) sb.append(i > 0 ? "," : "").append("{\"name\":").append(q(values[i])).append(",\"price\":0}");
+        return sb.append("]}").toString();
+    }
+
+    private static String opts(String... parts) {
+        return "[" + String.join(",", parts) + "]";
+    }
+
+    private static String tr(String ptName, String ptDesc, String lbName, String deName, String deDesc) {
+        StringBuilder sb = new StringBuilder("{\"pt\":{\"name\":" + q(ptName));
+        if (ptDesc != null) sb.append(",\"description\":").append(q(ptDesc));
+        sb.append("},\"lb\":{\"name\":").append(q(lbName)).append("},\"de\":{\"name\":").append(q(deName));
+        if (deDesc != null) sb.append(",\"description\":").append(q(deDesc));
+        return sb.append("}}").toString();
+    }
+
+    private Category noelCat(String name, String icon, String description, int pos, String i18n) {
+        Category c = cat(name, icon, description, pos);
+        c.i18nJson = i18n;
+        return categories.save(c);
+    }
+
+    private void noelProd(Category c, String name, String description, int p2, String options, int pos, String i18n) {
+        Product p = new Product();
+        p.category = c;
+        p.name = name;
+        p.description = description;
+        p.price = new BigDecimal(p2);
+        p.optionsJson = options;
+        p.tags = "sur commande";
+        p.position = pos;
+        p.i18nJson = i18n;
+        products.save(p);
+    }
+
+    private void seedChristmasMenu() {
+        if (settings.existsById(NOEL_FLAG)) return;
+        Setting flag = new Setting();
+        flag.key = NOEL_FLAG;
+        flag.value = "done";
+        settings.save(flag);
+
+        String rice = choice("Accompagnement", true, false, "Riz", "Pommes de terre");
+
+        Category starters = noelCat("Noël · Entrées", "🥟", "Menu de Noël & Nouvel An — spécialités portugaises, sur commande", 20,
+                tr("Natal · Entradas", "Menu de Natal e Ano Novo — especialidades portuguesas, por encomenda", "Chrëschtdag · Virspeisen", "Weihnachten · Vorspeisen",
+                        "Weihnachts- und Silvestermenü — portugiesische Spezialitäten, auf Bestellung"));
+        Category fish = noelCat("Noël · Poissons", "🐟", "Bacalhau et saumon, à partager", 21,
+                tr("Natal · Peixes", "Bacalhau e salmão, para partilhar", "Chrëschtdag · Fësch", "Weihnachten · Fisch", "Bacalhau und Lachs zum Teilen"));
+        Category meat = noelCat("Noël · Viandes", "🍖", "Rôtis et volaille, avec accompagnement au choix", 22,
+                tr("Natal · Carnes", "Assados e aves, com acompanhamento à escolha", "Chrëschtdag · Fleesch", "Weihnachten · Fleisch", "Braten und Geflügel, Beilage nach Wahl"));
+        Category dessert = noelCat("Noël · Desserts", "🍮", "Douceurs de fête", 23,
+                tr("Natal · Sobremesas", "Doçuras de festa", "Chrëschtdag · Dessert", "Weihnachten · Desserts", "Festtagssüßes"));
+
+        String varieties = choice("Variétés (choisissez-en 6)", true, true, "Rissóis de camarão", "Rissóis de carne", "Croquete de carne",
+                "Pastéis de bacalhau", "Coxinhas de frango", "Mini chouriço", "Mini folhados", "Mini croissants salés", "Mini quiches", "Mini pâtés de viande");
+        noelProd(starters, "Box apéritif à composer soi-même", "Composez votre box : choisissez 6 variétés de salés parmi notre sélection.", 29,
+                opts(portion(29, null, 115), varieties), 1,
+                tr("Caixa de aperitivos à sua escolha", "Componha a sua caixa: escolha 6 variedades de salgados.", "Apéro-Box zum Zesummestellen",
+                        "Aperitif-Box zum Selbstzusammenstellen", "Stellen Sie Ihre Box zusammen: 6 herzhafte Sorten zur Auswahl."));
+        noelProd(starters, "Plateau charcuterie & fromages", "Sélection de charcuteries portugaises, fromages, olives et accompagnements.", 32,
+                opts(portion(32, 68, 125)), 2,
+                tr("Tábua de enchidos e queijos", "Seleção de enchidos portugueses, queijos, azeitonas e acompanhamentos.", "Wurscht- a Kéisplat",
+                        "Wurst- und Käseplatte", "Auswahl portugiesischer Wurstwaren, Käse, Oliven und Beilagen."));
+        noelProd(starters, "Plateau de crevettes & saumon fumé", "Crevettes, saumon fumé, citron et accompagnements.", 39,
+                opts(portion(39, 85, 160)), 3,
+                tr("Tábua de camarão e salmão fumado", "Camarão, salmão fumado, limão e acompanhamentos.", "Crevetten- a Raucherzalmplat",
+                        "Garnelen- und Räucherlachsplatte", "Garnelen, Räucherlachs, Zitrone und Beilagen."));
+
+        noelProd(fish, "Bacalhau à Gomes de Sá", "Morue effilochée, pommes de terre, oignons, œufs, olives et huile d'olive.", 44, opts(portion(44, 105, 195)), 1,
+                tr("Bacalhau à Gomes de Sá", "Bacalhau desfiado, batata, cebola, ovos, azeitonas e azeite.", "Bacalhau à Gomes de Sá", "Bacalhau à Gomes de Sá",
+                        "Zerzupfter Stockfisch, Kartoffeln, Zwiebeln, Eier, Oliven und Olivenöl."));
+        noelProd(fish, "Bacalhau com Todos", "Morue, pommes de terre, chou, carottes, œufs et pois chiches.", 46, opts(portion(46, 110, 200)), 2,
+                tr("Bacalhau com Todos", "Bacalhau, batata, couve, cenoura, ovos e grão-de-bico.", "Bacalhau com Todos", "Bacalhau com Todos",
+                        "Stockfisch, Kartoffeln, Kohl, Karotten, Eier und Kichererbsen."));
+        noelProd(fish, "Bacalhau com Natas", "Morue, pommes de terre, oignons et crème, gratinée au four.", 42, opts(portion(42, 100, 185)), 3,
+                tr("Bacalhau com Natas", "Bacalhau, batata, cebola e natas, gratinado no forno.", "Bacalhau com Natas", "Bacalhau com Natas",
+                        "Stockfisch, Kartoffeln, Zwiebeln und Sahne, im Ofen überbacken."));
+        noelProd(fish, "Bacalhau com Broa", "Morue au four, croûte de broa, ail, huile d'olive et herbes.", 45, opts(portion(45, 108, 200)), 4,
+                tr("Bacalhau com Broa", "Bacalhau no forno, crosta de broa, alho, azeite e ervas.", "Bacalhau com Broa", "Bacalhau com Broa",
+                        "Ofenfrischer Stockfisch mit Broa-Kruste, Knoblauch, Olivenöl und Kräutern."));
+        noelProd(fish, "Bacalhau à Braga", "Morue façon Braga, pommes de terre, oignons et sauce traditionnelle.", 45, opts(portion(45, 98, 205)), 5,
+                tr("Bacalhau à Braga", "Bacalhau à moda de Braga, batata, cebola e molho tradicional.", "Bacalhau à Braga", "Bacalhau à Braga",
+                        "Stockfisch nach Braga-Art, Kartoffeln, Zwiebeln und traditionelle Soße."));
+        noelProd(fish, "Saumon rôti au four", "Légumes, pommes de terre grenaille et sauce champagne.", 42, opts(portion(42, 98, 180)), 6,
+                tr("Salmão assado no forno", "Legumes, batata pequena e molho de champanhe.", "Gebakene Zalm aus dem Uewen", "Im Ofen gebratener Lachs",
+                        "Gemüse, Drillinge und Champagnersoße."));
+
+        noelProd(meat, "Rôti de porc", "Rôti de porc au four, légumes et choux, accompagné de sa sauce.", 34, opts(portion(34, 78, 145), rice), 1,
+                tr("Assado de porco", "Assado de porco no forno, legumes e couves, com o seu molho.", "Schweinsbroden", "Schweinebraten",
+                        "Ofenbraten vom Schwein, Gemüse und Kohl, mit Soße."));
+        noelProd(meat, "Rôti de veau", "Rôti de veau, légumes, riz ou pommes de terre, sauce maison.", 39, opts(portion(39, 88, 165), rice), 2,
+                tr("Assado de vitela", "Assado de vitela, legumes, arroz ou batatas, molho da casa.", "Kallefsbroden", "Kalbsbraten",
+                        "Kalbsbraten, Gemüse, Reis oder Kartoffeln, Soße des Hauses."));
+        noelProd(meat, "Dinde à la portugaise", "Dinde rôtie au four, riz ou pommes de terre, sauce maison.", 36, opts(portion(36, 82, 150), rice), 3,
+                tr("Peru à portuguesa", "Peru assado no forno, arroz ou batatas, molho da casa.", "Truthahn op portugisesch", "Pute nach portugiesischer Art",
+                        "Im Ofen gebratene Pute, Reis oder Kartoffeln, Soße des Hauses."));
+
+        noelProd(dessert, "Pommes rôties à la cannelle", "Pommes cuites au four, sucre et cannelle.", 14, opts(portion(14, 30, 55)), 1,
+                tr("Maçãs assadas com canela", "Maçãs assadas no forno, açúcar e canela.", "Gebake Äppel mat Zimt", "Bratäpfel mit Zimt", "Im Ofen gebackene Äpfel mit Zucker und Zimt."));
+        noelProd(dessert, "Rabanadas", "Pain perdu portugais, parfumé à la cannelle.", 14, opts(portion(14, 32, 58)), 2,
+                tr("Rabanadas", "Rabanadas tradicionais, perfumadas com canela.", "Rabanadas", "Rabanadas", "Portugiesischer Armer Ritter, mit Zimt verfeinert."));
+        noelProd(dessert, "Plateau de fruits frais", "Sélection de fruits frais de saison, joliment présentée.", 16, opts(portion(16, 36, 65)), 3,
+                tr("Tábua de fruta fresca", "Seleção de fruta fresca da época, bem apresentada.", "Plat mat frëschem Uebst", "Frische Obstplatte", "Auswahl frischer Früchte der Saison, hübsch angerichtet."));
+
+        setIfEmpty("orders.message", "Menu de Noël & Nouvel An : sur commande, à emporter ou en livraison, du 24 au 31 décembre. "
+                + "Réservations ouvertes jusqu'au 18 décembre (Noël) et jusqu'au 28 décembre (Nouvel An).");
+        setIfEmpty("orders.message.pt", "Menu de Natal e Ano Novo: por encomenda, para levantar ou entrega ao domicílio, de 24 a 31 de dezembro. "
+                + "Reservas abertas até 18 de dezembro (Natal) e até 28 de dezembro (Ano Novo).");
+        setIfEmpty("orders.message.de", "Weihnachts- und Silvestermenü: auf Bestellung, zum Mitnehmen oder mit Lieferung, vom 24. bis 31. Dezember. "
+                + "Reservierungen bis 18. Dezember (Weihnachten) und bis 28. Dezember (Silvester).");
+        log.info("Menu de Noël ajouté (4 catégories, 15 produits).");
+    }
+
+    private void setIfEmpty(String key, String value) {
+        Setting cur = settings.findById(key).orElse(null);
+        if (cur != null && cur.value != null && !cur.value.isBlank()) return;
+        Setting s = cur != null ? cur : new Setting();
+        s.key = key;
+        s.value = value;
+        settings.save(s);
     }
 
     private void pack(String name, String description, String price, int minGuests, int pos) {
