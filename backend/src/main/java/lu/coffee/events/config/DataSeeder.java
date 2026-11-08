@@ -129,6 +129,7 @@ public class DataSeeder implements CommandLineRunner {
         attachNoelPhotos();
         seedBrand();
         seedTheme();
+        seedAbout();
     }
 
     private void ensureUser(String name, String email, String password, Enums.Role role) {
@@ -435,6 +436,30 @@ public class DataSeeder implements CommandLineRunner {
         settings.save(f);
         forceSetting("brand.primary", "#d62b2a");
         forceSetting("brand.dark", "#181818");
+    }
+
+    /** Une seule fois : texte de présentation de l'accueil en 4 langues (modifiable dans Réglages). */
+    private void seedAbout() {
+        String flag = "seed.about.v1";
+        if (settings.existsById(flag)) return;
+        Setting f = new Setting();
+        f.key = flag;
+        f.value = "done";
+        settings.save(f);
+        forceSetting("cafe.name", "Viva Lounge");
+        forceSetting("cafe.tagline", "Brasserie · Au goût du Portugal");
+        forceSetting("cafe.about", "Viva Lounge, brasserie au goût du Portugal : cuisine portugaise et douceurs faites maison, préparées avec soin chaque jour. "
+                + "Retrouvez nos spécialités (bacalhau, rôtis, pâtisseries et desserts traditionnels) à savourer sur place, à emporter ou à commander pour vos repas de fête. "
+                + "Notre salle privée accueille vos anniversaires, baptêmes et réunions de famille ou d'équipe.");
+        forceSetting("cafe.about.pt", "Viva Lounge, brasserie com sabor a Portugal: cozinha portuguesa e doçaria caseira, feitas com carinho todos os dias. "
+                + "Descubra as nossas especialidades (bacalhau, assados, pastelaria e sobremesas tradicionais) para saborear no local, levar ou encomendar para as suas refeições de festa. "
+                + "A nossa sala privada acolhe aniversários, batizados e encontros de família ou de equipa.");
+        forceSetting("cafe.about.de", "Viva Lounge, Brasserie mit portugiesischem Flair: portugiesische Küche und hausgemachte Süßspeisen, jeden Tag mit Liebe zubereitet. "
+                + "Entdecken Sie unsere Spezialitäten (Bacalhau, Braten, Gebäck und traditionelle Desserts) zum Genießen vor Ort, zum Mitnehmen oder zum Bestellen für Ihre Festtage. "
+                + "In unserem privaten Saal feiern Sie Geburtstage, Taufen sowie Familien- und Teamtreffen.");
+        forceSetting("cafe.about.lb", "Viva Lounge, Brasserie mat portugiesesche Goût: portugisesch Kichen an hausgemaachte Séissegkeeten, all Dag mat Léift gemaach. "
+                + "Entdeckt eis Spezialitéiten (Bacalhau, Broden, Gebäck an traditionellt Dessert) fir hei ze genéissen, matzehuelen oder fir Är Fester ze bestellen. "
+                + "An eisem private Sall kënnt Dir Gebuertsdeeg, Daf a Familljen- an Equipentreffen feieren.");
     }
 
     private void forceSetting(String key, String value) {
