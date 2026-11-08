@@ -127,6 +127,7 @@ public class DataSeeder implements CommandLineRunner {
         seedChristmasMenu();
         hideRegularMenu();
         attachNoelPhotos();
+        seedBrand();
     }
 
     private void ensureUser(String name, String email, String password, Enums.Role role) {
@@ -400,6 +401,34 @@ public class DataSeeder implements CommandLineRunner {
             }
         }
         log.info("Photos du menu de Noël ajoutées.");
+    }
+
+    /** Une seule fois : identité Viva Lounge et traductions du bandeau d'événements (modifiables dans Réglages). */
+    private void seedBrand() {
+        String flag = "seed.brand.vivalounge.v1";
+        if (settings.existsById(flag)) return;
+        Setting f = new Setting();
+        f.key = flag;
+        f.value = "done";
+        settings.save(f);
+        Setting n = settings.findById("cafe.name").orElse(null);
+        if (n == null || n.value == null || n.value.isBlank() || "Coffee Events".equals(n.value)) forceSetting("cafe.name", "Viva Lounge");
+        Setting t = settings.findById("cafe.tagline").orElse(null);
+        if (t == null || t.value == null || t.value.isBlank() || t.value.startsWith("Café de quartier")) forceSetting("cafe.tagline", "Brasserie · Au goût du Portugal");
+        setIfEmpty("banner.items.pt", "Menu de Natal e Ano Novo: especialidades portuguesas, por encomenda\nReservas abertas até 18 de dezembro (Natal) e até 28 de dezembro (Ano Novo)\nPara levantar ou entrega ao domicílio, de 24 a 31 de dezembro");
+        setIfEmpty("banner.items.de", "Weihnachts- und Silvestermenü: portugiesische Spezialitäten, auf Bestellung\nReservierungen bis 18. Dezember (Weihnachten) und bis 28. Dezember (Silvester)\nZum Mitnehmen oder mit Lieferung, vom 24. bis 31. Dezember");
+        setIfEmpty("banner.items.lb", "Chrëschtdags- an Neijoerschmenü: portugisesch Spezialitéiten, op Bestellung\nReservatioune bis den 18. Dezember (Chrëschtdag) a bis den 28. Dezember (Neijoer)\nZum Metholl oder mat Liwwerung, vum 24. bis 31. Dezember");
+        setIfEmpty("banner.linkLabel.pt", "Encomendar");
+        setIfEmpty("banner.linkLabel.de", "Bestellen");
+        setIfEmpty("banner.linkLabel.lb", "Bestellen");
+        log.info("Identité Viva Lounge et bandeau d'événements initialisés.");
+    }
+
+    private void forceSetting(String key, String value) {
+        Setting s = settings.findById(key).orElse(new Setting());
+        s.key = key;
+        s.value = value;
+        settings.save(s);
     }
 
     private void setIfEmpty(String key, String value) {

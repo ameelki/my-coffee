@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SettingsService } from '../core/settings.service';
 
@@ -7,6 +7,25 @@ import { SettingsService } from '../core/settings.service';
   standalone: true,
   imports: [RouterLink],
   template: `
+    @if (settings.bool('banner.enabled') && items().length) {
+      <div class="promo" role="region" [attr.aria-label]="settings.str('banner.label', 'Événements')">
+        <span class="promo-label">{{ settings.str('banner.label', 'Événements') }}</span>
+        <div class="promo-track" aria-live="off">
+          <div class="promo-run">
+            @for (round of [0, 1]; track round) {
+              @for (it of items(); track $index) {<span class="promo-item" [attr.aria-hidden]="round === 1 ? 'true' : null">{{ it }}</span>}
+            }
+          </div>
+        </div>
+        @if (settings.str('banner.link')) {
+          @if (settings.str('banner.link').startsWith('/')) {
+            <a class="promo-cta" [routerLink]="settings.str('banner.link')">{{ settings.str('banner.linkLabel', 'Voir') }}</a>
+          } @else {
+            <a class="promo-cta" [href]="settings.str('banner.link')" target="_blank" rel="noopener">{{ settings.str('banner.linkLabel', 'Voir') }}</a>
+          }
+        }
+      </div>
+    }
     <section class="hero">
       <div class="container">
         <div>
@@ -76,4 +95,5 @@ import { SettingsService } from '../core/settings.service';
 })
 export class HomePage {
   settings = inject(SettingsService);
+  items = computed(() => (this.settings.str('banner.items') || '').split('\n').map((x) => x.trim()).filter(Boolean));
 }

@@ -25,6 +25,12 @@ public class SettingsService {
         DEFAULTS.put("brand.primary", "#b4531f");
         DEFAULTS.put("brand.dark", "#2a1810");
         DEFAULTS.put("currency", "EUR");
+        // Bandeau d'événements (page d'accueil) : un événement par ligne
+        DEFAULTS.put("banner.enabled", "true");
+        DEFAULTS.put("banner.label", "Viva Lounge");
+        DEFAULTS.put("banner.items", "Menu de Noël & Nouvel An : spécialités portugaises, sur commande\nRéservations ouvertes jusqu'au 18 décembre (Noël) et jusqu'au 28 décembre (Nouvel An)\nÀ emporter ou en livraison du 24 au 31 décembre");
+        DEFAULTS.put("banner.linkLabel", "Commander");
+        DEFAULTS.put("banner.link", "/carte");
         // Commandes
         DEFAULTS.put("orders.enabled", "true");
         DEFAULTS.put("orders.dineIn.enabled", "true");
@@ -52,7 +58,7 @@ public class SettingsService {
     }
 
     /** Textes affichés aux clients, traduisibles : clé de base + ".pt", ".lb", ".de" (vide = français). */
-    public static final String[] TRANSLATABLE = {"cafe.tagline", "cafe.about", "cafe.hours", "room.name", "room.description", "room.conditions", "orders.message"};
+    public static final String[] TRANSLATABLE = {"cafe.tagline", "cafe.about", "cafe.hours", "room.name", "room.description", "room.conditions", "orders.message", "banner.label", "banner.items", "banner.linkLabel"};
     public static final String[] LANGS = {"pt", "lb", "de"};
 
     static {
