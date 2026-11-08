@@ -16,7 +16,7 @@ import { I18n, LANGS } from './core/i18n.service';
     <header class="top">
       <div class="container">
         <a routerLink="/" class="brand">
-          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 12h18v6a8 8 0 0 1-8 8h-2a8 8 0 0 1-8-8z" fill="#c2531b"/><path d="M23 14h2.5a3 3 0 0 1 0 6H22" fill="none" stroke="#b7cf7a" stroke-width="2"/><path d="M11 3c-1.5 2 1.5 3 0 5M16 3c-1.5 2 1.5 3 0 5" fill="none" stroke="#e9f1d6" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <img src="assets/logo.png" alt="" width="44" height="44">
           {{ settings.str('cafe.name', 'Coffee Events') }}
         </a>
         <nav class="nav" id="menu-principal" [class.open]="menuOpen()" (click)="menuOpen.set(false)" aria-label="Navigation principale">
@@ -44,7 +44,7 @@ import { I18n, LANGS } from './core/i18n.service';
     <main id="contenu"><router-outlet /></main>
     <footer class="foot">
       <div class="container grid c3">
-        <div><b style="color:#fff">{{ settings.str('cafe.name') }}</b><br>{{ settings.str('cafe.tagline') }}</div>
+        <div><img class="foot-logo" src="assets/logo.png" alt="Foodelicious Team"><b style="color:#fff">{{ settings.str('cafe.name') }}</b><br>{{ settings.str('cafe.tagline') }}</div>
         <div>{{ settings.str('cafe.address') }}<br>{{ settings.str('cafe.hours') }}</div>
         <div>{{ settings.str('cafe.phone') }}<br><a href="mailto:{{ settings.str('cafe.email') }}">{{ settings.str('cafe.email') }}</a></div>
       </div>

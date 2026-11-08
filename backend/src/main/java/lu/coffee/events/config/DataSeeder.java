@@ -128,6 +128,7 @@ public class DataSeeder implements CommandLineRunner {
         hideRegularMenu();
         attachNoelPhotos();
         seedBrand();
+        seedTheme();
     }
 
     private void ensureUser(String name, String email, String password, Enums.Role role) {
@@ -422,6 +423,18 @@ public class DataSeeder implements CommandLineRunner {
         setIfEmpty("banner.linkLabel.de", "Bestellen");
         setIfEmpty("banner.linkLabel.lb", "Bestellen");
         log.info("Identité Viva Lounge et bandeau d'événements initialisés.");
+    }
+
+    /** Une seule fois : thème rouge / noir assorti au logo Foodelicious Team (modifiable dans Réglages > Couleurs). */
+    private void seedTheme() {
+        String flag = "seed.theme.foodelicious.v1";
+        if (settings.existsById(flag)) return;
+        Setting f = new Setting();
+        f.key = flag;
+        f.value = "done";
+        settings.save(f);
+        forceSetting("brand.primary", "#d62b2a");
+        forceSetting("brand.dark", "#181818");
     }
 
     private void forceSetting(String key, String value) {

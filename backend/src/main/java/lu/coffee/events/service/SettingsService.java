@@ -22,8 +22,8 @@ public class SettingsService {
         DEFAULTS.put("cafe.email", "contact@coffee.lu");
         DEFAULTS.put("cafe.hours", "Lun-Ven 7h30-18h · Sam-Dim 9h-19h");
         DEFAULTS.put("cafe.about", "Un café chaleureux où l'on déjeune, où l'on travaille et où l'on fête. Notre salle privée accueille anniversaires, baptêmes, repas d'équipe et soirées.");
-        DEFAULTS.put("brand.primary", "#b4531f");
-        DEFAULTS.put("brand.dark", "#2a1810");
+        DEFAULTS.put("brand.primary", "#d62b2a");
+        DEFAULTS.put("brand.dark", "#181818");
         DEFAULTS.put("currency", "EUR");
         // Bandeau d'événements (page d'accueil) : un événement par ligne
         DEFAULTS.put("banner.enabled", "true");

@@ -37,22 +37,8 @@ import { SettingsService } from '../core/settings.service';
           </div>
           <div class="hours"><span>{{ settings.str('cafe.hours') }}</span><span>{{ settings.str('cafe.address') }}</span></div>
         </div>
-        <div class="cup-wrap" aria-hidden="true">
-          <svg class="cup" viewBox="0 0 320 300">
-            <g class="steam">
-              <path d="M120 90c-22-24 22-38 0-66"/>
-              <path d="M160 96c-22-24 22-38 0-66"/>
-              <path d="M200 90c-22-24 22-38 0-66"/>
-            </g>
-            <ellipse cx="160" cy="262" rx="130" ry="22" fill="#0b1712"/>
-            <ellipse cx="160" cy="246" rx="112" ry="16" fill="#e9f1d6"/>
-            <path d="M62 112h196v54c0 52-40 84-98 84s-98-32-98-84z" fill="#c2531b"/>
-            <path d="M62 112h196v22H62z" fill="#8f3a10"/>
-            <ellipse cx="160" cy="112" rx="98" ry="14" fill="#3a2418"/>
-            <ellipse cx="160" cy="111" rx="84" ry="9" fill="#5b3a28"/>
-            <path d="M258 128h20a30 30 0 0 1 0 60h-26" fill="none" stroke="#c2531b" stroke-width="14" stroke-linecap="round"/>
-            <path d="M92 150c0 40 22 66 54 74" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="8" stroke-linecap="round"/>
-          </svg>
+        <div class="cup-wrap">
+          <img class="hero-logo" src="assets/logo.png" alt="Foodelicious Team">
         </div>
       </div>
     </section>
