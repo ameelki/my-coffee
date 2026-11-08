@@ -335,3 +335,7 @@ input, select, textarea { border-radius: 12px; min-height: 46px; }
 .foot { border-top: 4px solid var(--copper); }
 .foot .grid { align-items: start; }
 @media (max-width: 860px) { .promo-label { display: none; } .hero p.lead { padding-left: 12px; } .hero-logo { width: min(210px, 60vw); } }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.chips .chip { min-width: 0; }
+.chip.on { background: var(--copper); border-color: var(--copper); color: #fff; }

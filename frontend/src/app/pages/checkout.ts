@@ -7,6 +7,7 @@ import { CartService } from '../core/cart.service';
 import { SettingsService } from '../core/settings.service';
 import { Order, OrderMode } from '../core/models';
 import { errMsg, isoDate, money } from '../core/util';
+import { currentLang } from '../core/i18n.service';
 
 @Component({
   selector: 'app-checkout',
@@ -42,9 +43,26 @@ import { errMsg, isoDate, money } from '../core/util';
               </div>
             } @else {
               <div class="field">
-                <label for="pickup">Heure de retrait</label>
-                <input id="pickup" name="pickup" type="time" [(ngModel)]="pickup" />
-                <span class="muted small">Laissez vide pour un retrait dès que possible (environ {{ settings.num('orders.takeaway.minMinutes') }} min).</span>
+                <span class="lbl">Jour de retrait</span>
+                <div class="chips">
+                  @for (d of days; track d.iso) {
+                    <button type="button" class="chip" [class.on]="pickupDate === d.iso" (click)="pickDay(d.iso)">{{ d.label }}</button>
+                  }
+                </div>
+                <label for="otherday" class="small muted" style="margin-top:8px">Autre date</label>
+                <input id="otherday" name="otherday" type="date" [min]="todayIso" [(ngModel)]="pickupDate" (ngModelChange)="pickDay($event)" />
+              </div>
+              <div class="field">
+                <span class="lbl">Heure de retrait</span>
+                <div class="chips">
+                  @if (pickupDate === todayIso) {
+                    <button type="button" class="chip" [class.on]="pickup === ''" (click)="pickup = ''">Dès que possible (~{{ settings.num('orders.takeaway.minMinutes') }} min)</button>
+                  }
+                  @for (t of slots(); track t) {
+                    <button type="button" class="chip" [class.on]="pickup === t" (click)="pickup = t">{{ t }}</button>
+                  }
+                </div>
+                @if (!slots().length && pickupDate === todayIso) { <span class="muted small">Plus de créneau aujourd'hui : choisissez un autre jour.</span> }
               </div>
             }
             <div class="form-grid">
@@ -83,6 +101,9 @@ export class CheckoutPage implements OnInit {
   mode: OrderMode = 'TAKEAWAY';
   table = '';
   pickup = '';
+  todayIso = isoDate(new Date());
+  pickupDate = isoDate(new Date());
+  days = this.buildDays();
   name = '';
   phone = '';
   email = '';
@@ -95,13 +116,52 @@ export class CheckoutPage implements OnInit {
     if (this.mode === 'DINE_IN' && !this.settings.bool('orders.dineIn.enabled')) this.mode = 'TAKEAWAY';
     this.table = this.cart.table();
     const u = this.auth.user();
-    if (u) { this.name = u.name; this.phone = u.phone || ''; this.email = u.email; }
+    // Champs vides par défaut ; seuls les clients connectés (pas l'équipe) retrouvent leurs coordonnées.
+    if (u && u.role === 'CUSTOMER') { this.name = u.name; this.phone = u.phone || ''; this.email = u.email; }
     this.api.get<string[]>('/public/tables').subscribe({ next: (t) => (this.tables = t) });
+  }
+
+  private locale(): string {
+    const l = currentLang();
+    return l === 'pt' ? 'pt-PT' : l === 'de' ? 'de-DE' : l === 'lb' ? 'de-LU' : 'fr-FR';
+  }
+
+  private buildDays() {
+    const out: { iso: string; label: string }[] = [];
+    const now = new Date();
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+      out.push({ iso: isoDate(d), label: d.toLocaleDateString(this.locale(), { weekday: 'short', day: 'numeric', month: 'short' }) });
+    }
+    return out;
+  }
+
+  pickDay(iso: string) {
+    if (!iso) return;
+    this.pickupDate = iso;
+    if (iso !== this.todayIso && !this.pickup) this.pickup = '12:00';
+    if (iso === this.todayIso && this.pickup && !this.slots().includes(this.pickup)) this.pickup = '';
+  }
+
+  /** Créneaux de 30 min de 10 h à 21 h 30 ; aujourd'hui, seulement ceux qui respectent le délai minimum. */
+  slots(): string[] {
+    const out: string[] = [];
+    const limit = new Date(Date.now() + this.settings.num('orders.takeaway.minMinutes') * 60000);
+    for (let h = 10; h < 22; h++) for (const m of [0, 30]) {
+      const t = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+      if (this.pickupDate === this.todayIso) {
+        const at = new Date(); at.setHours(h, m, 0, 0);
+        if (at < limit) continue;
+      }
+      out.push(t);
+    }
+    return out;
   }
 
   submit() {
     this.error = '';
     if (this.mode === 'DINE_IN' && !this.table) { this.error = 'Choisissez votre table.'; return; }
+    if (this.mode === 'TAKEAWAY' && this.pickupDate !== this.todayIso && !this.pickup) { this.error = 'Choisissez une heure de retrait.'; return; }
     this.busy = true;
     const body = {
       mode: this.mode,
@@ -109,7 +169,7 @@ export class CheckoutPage implements OnInit {
       customerName: this.name,
       phone: this.phone || null,
       email: this.email || null,
-      pickupAt: this.mode === 'TAKEAWAY' && this.pickup ? isoDate(new Date()) + 'T' + this.pickup + ':00' : null,
+      pickupAt: this.mode === 'TAKEAWAY' && this.pickup ? this.pickupDate + 'T' + this.pickup + ':00' : null,
       note: this.note || null,
       items: this.cart.lines().map((l) => ({ productId: l.productId, quantity: l.qty, choices: l.choices, note: l.note || null })),
     };
