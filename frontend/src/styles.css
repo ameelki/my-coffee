@@ -339,3 +339,12 @@ input, select, textarea { border-radius: 12px; min-height: 46px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 .chips .chip { min-width: 0; }
 .chip.on { background: var(--copper); border-color: var(--copper); color: #fff; }
+
+/* Réserve en bas d'écran : le badge « Powered by Netlify » (en bas à droite)
+   recouvrait les boutons « Ajouter », « Valider la commande » et « Envoyer ma commande ». */
+:root { --bottom-gap: calc(84px + env(safe-area-inset-bottom, 0px)); }
+body { padding-bottom: var(--bottom-gap); }
+.modal { padding-bottom: var(--bottom-gap); }
+.drawer footer { padding-bottom: var(--bottom-gap); }
+.toast { bottom: var(--bottom-gap); }
+@media (min-width: 700px) { .modal { padding-bottom: clamp(18px, 4vw, 28px); max-height: calc(100vh - 2 * var(--bottom-gap)); } }
